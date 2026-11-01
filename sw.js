@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pesowise-shell-v18';
+const CACHE_NAME = 'pesowise-shell-v19';
 const APP_ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const APP_ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './css/style.css',
+  './css/mobile-fix.css',
   './assets/fonts/inter-latin-variable.woff2',
   './js/database.js',
   './js/finance.js',
