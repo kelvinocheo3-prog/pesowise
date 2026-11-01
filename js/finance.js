@@ -44,3 +44,11 @@ export function summarizeTransactions(transactions, start, end) {
   const expenses = sumAmounts(range.filter(transaction => transaction.type === 'expense'));
   return { income, expenses, net: income - expenses };
 }
+
+export function weekStartDate(date, startsOn = 1) {
+  const firstDay = Number(startsOn) === 0 ? 0 : 1;
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const daysSinceStart = (start.getDay() - firstDay + 7) % 7;
+  start.setDate(start.getDate() - daysSinceStart);
+  return start;
+}

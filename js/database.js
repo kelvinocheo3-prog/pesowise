@@ -82,6 +82,8 @@ export async function initializeDatabase() {
   if (!existing) DEFAULT_CATEGORIES.forEach(category => categories.put(category));
   if (!await requestResult(settings.get('savingsLinked'))) settings.put({ key: 'savingsLinked', value: false });
   if (!await requestResult(settings.get('currency'))) settings.put({ key: 'currency', value: 'PHP' });
+  if (!await requestResult(settings.get('budgetAlertThreshold'))) settings.put({ key: 'budgetAlertThreshold', value: 80 });
+  if (!await requestResult(settings.get('weekStartsOn'))) settings.put({ key: 'weekStartsOn', value: 1 });
   await transactionComplete(tx);
   await recordAutomaticSnapshot(db);
   return db;

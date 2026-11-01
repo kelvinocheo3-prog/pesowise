@@ -2,7 +2,7 @@ import {
   initializeDatabase, getAll, getById, putRecord, deleteRecord,
   getSetting, setSetting
 } from './database.js';
-import { validAmount, sumAmounts, cashBalance, plannedBudgetTotal, budgetActual, savingsBalance, summarizeTransactions } from './finance.js';
+import { validAmount, sumAmounts, cashBalance, plannedBudgetTotal, budgetActual, savingsBalance, summarizeTransactions, weekStartDate } from './finance.js';
 
 const app = document.querySelector('#app');
 const dialogRoot = document.querySelector('#dialog-root');
@@ -59,7 +59,12 @@ async function loadData() {
   const names = ['transactions', 'budgets', 'savingsGoals', 'savingsActivities', 'categories'];
   const entries = await Promise.all(names.map(async name => [name, await getAll(name)]));
   state.data = Object.fromEntries(entries);
-  state.data.savingsLinked = await getSetting('savingsLinked', false);
+  const [savingsLinked, budgetAlertThreshold, weekStartsOn] = await Promise.all([
+    getSetting('savingsLinked', false),
+    getSetting('budgetAlertThreshold', 80),
+    getSetting('weekStartsOn', 1)
+  ]);
+  Object.assign(state.data, { savingsLinked, budgetAlertThreshold, weekStartsOn });
 }
 
 function pageHeading(eyebrow, title, subtitle, actions = '') {
@@ -113,7 +118,8 @@ function renderDashboard() {
   const recent = [...state.data.transactions].sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt - a.updatedAt).slice(0, 5);
   const spendByCategory = state.data.transactions.filter(row => row.type === 'expense' && row.date?.slice(0, 7) === monthKey()).reduce((map, row) => map.set(row.category, (map.get(row.category) || 0) + Number(row.amount)), new Map());
   const categories = [...spendByCategory.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const alert = stats.budgetTotal && utilization >= 80
+  const alertThreshold = Number(state.data.budgetAlertThreshold) || 80;
+  const alert = stats.budgetTotal && utilization >= alertThreshold
     ? `<div class="notice ${utilization >= 100 ? 'danger' : ''}"><strong>${utilization >= 100 ? '!' : '↗'}</strong><span>${utilization >= 100 ? 'Your expenses are over this month’s budget.' : `You have used ${utilization}% of this month’s budget.`} ${money(remaining)} remaining.</span></div>`
     : '';
   const actions = `${addButton('Add income', 'transaction-income', '+')} ${addButton('Add expense', 'transaction-expense', '−')} ${addButton('Create budget', 'budget', '▤')} ${addButton('Add savings', 'savings', '◎')} <a class="button" href="#reports" data-page="reports" aria-label="View reports" title="View reports"><span class="button-icon" aria-hidden="true">▥</span><span class="button-label">View reports</span></a>`;
@@ -183,9 +189,10 @@ function renderBudgets() {
     <div class="section-row"><h2>${escapeHtml(monthLabel)} budgets</h2><span class="muted" style="font-size:9px">${budgets.length} budget${budgets.length === 1 ? '' : 's'}</span></div>
     ${budgets.length ? `<div style="display:grid;gap:10px">${budgets.map(budget => {
       const spent = budgetSpend(budget); const percent = budget.amount ? Math.round(spent / budget.amount * 100) : 0; const remaining = budget.amount - spent;
-      const status = percent >= 100 ? 'over' : percent >= 80 ? 'warn' : '';
-      return `<article class="card budget-card"><div class="budget-top"><div><strong>${escapeHtml(budget.category || 'Overall monthly budget')}</strong><small>${escapeHtml(monthLabel)}${percent >= 80 ? ` · ${percent >= 100 ? 'Budget exceeded' : '80% budget alert'}` : ''}</small></div><div class="budget-numbers"><strong>${money(spent)} / ${money(budget.amount)}</strong><br>${percent}% used</div></div><div class="budget-meter"><span class="${status}" style="width:${Math.min(100, percent)}%"></span></div><div class="budget-bottom"><span>${money(remaining)} ${remaining < 0 ? 'over budget' : 'remaining'}</span><span class="actions-cell"><button class="icon-action" type="button" title="Edit" aria-label="Edit budget" data-action="edit-budget" data-id="${escapeHtml(budget.id)}">✎</button><button class="icon-action" type="button" title="Delete" aria-label="Delete budget" data-action="delete-budget" data-id="${escapeHtml(budget.id)}">×</button></span></div></article>`;
-    }).join('')}</div>` : `<article class="card" style="margin-top:13px">${emptyState('▤', 'No budget for this month', 'Create an overall or category budget to compare your plan against real expenses.', addButton('Create budget', 'budget'))}</article>`}`;
+      const alertThreshold = Number(state.data.budgetAlertThreshold) || 80;
+      const status = percent >= 100 ? 'over' : percent >= alertThreshold ? 'warn' : '';
+      return `<article class="card budget-card"><div class="budget-top"><div><strong>${escapeHtml(budget.category || 'Overall monthly budget')}</strong><small>${escapeHtml(monthLabel)}${percent >= alertThreshold ? ` · ${percent >= 100 ? 'Budget exceeded' : `${alertThreshold}% budget alert`}` : ''}</small></div><div class="budget-numbers"><strong>${money(spent)} / ${money(budget.amount)}</strong><br>${percent}% used</div></div><div class="budget-meter"><span class="${status}" style="width:${Math.min(100, percent)}%"></span></div><div class="budget-bottom"><span>${money(remaining)} ${remaining < 0 ? 'over budget' : 'remaining'}</span><span class="actions-cell"><button class="icon-action" type="button" title="Edit" aria-label="Edit budget" data-action="edit-budget" data-id="${escapeHtml(budget.id)}">✎</button><button class="icon-action" type="button" title="Delete" aria-label="Delete budget" data-action="delete-budget" data-id="${escapeHtml(budget.id)}">×</button></span></div></article>`;
+    }).join('')}</div>` : `<article class="card" style="margin-top:13px">${emptyState('▤', 'No budget for this month', 'Create an overall or category budget to compare your plan against real expenses.')}</article>`}`;
 }
 
 function goalCurrent(goalId) {
@@ -302,16 +309,19 @@ function renderSettings() {
   const expenseCategories = state.data.categories.filter(item => item.kind === 'expense').sort((a, b) => a.name.localeCompare(b.name));
   const incomeCategories = state.data.categories.filter(item => item.kind === 'income').sort((a, b) => a.name.localeCompare(b.name));
   const categoryGroup = (title, items) => `<div class="category-group"><h3>${title}</h3><div class="category-chips">${items.map(item => `<span class="category-chip">${escapeHtml(item.name)}${item.custom ? `<button type="button" aria-label="Delete ${escapeHtml(item.name)} category" title="Delete category" data-action="delete-category" data-id="${escapeHtml(item.id)}">×</button>` : ''}</span>`).join('')}</div></div>`;
+  const alertThreshold = Number(state.data.budgetAlertThreshold) || 80;
+  const weekStartsOn = Number(state.data.weekStartsOn ?? 1);
+  const alertOptions = [50, 60, 70, 80, 90].map(value => `<option value="${value}" ${value === alertThreshold ? 'selected' : ''}>${value}% used</option>`).join('');
+  const weekOptions = [{ value: 1, label: 'Monday' }, { value: 0, label: 'Sunday' }].map(option => `<option value="${option.value}" ${option.value === weekStartsOn ? 'selected' : ''}>${option.label}</option>`).join('');
   app.innerHTML = `${pageHeading('YOUR DEVICE', 'Settings & data', 'Manage local preferences, categories, and app installation.', '')}
-    <div class="settings-grid"><article class="card settings-section"><h2>Preferences</h2><p>These controls affect how PesoWise works on this device.</p><div class="setting-row"><div><strong>Dark theme</strong><small>Use a darker interface in low light.</small></div><label class="switch"><input id="theme-setting" type="checkbox" ${document.documentElement.dataset.theme === 'dark' ? 'checked' : ''} aria-label="Enable dark theme"><span></span></label></div><div class="setting-row"><div><strong>Link savings movements to transactions</strong><small>Deposits become expenses and withdrawals become income. Off by default.</small></div><label class="switch"><input id="savings-link-setting" type="checkbox" ${state.data.savingsLinked ? 'checked' : ''} aria-label="Link savings activities to transactions"><span></span></label></div><div class="setting-row"><div><strong>Currency</strong><small>Philippine Peso · PHP · en-PH</small></div><span class="badge">₱ PHP</span></div><div class="setting-row"><div><strong>Install PesoWise</strong><small>Add the app to this device’s home screen.</small></div><button type="button" class="button small primary" data-action="install-app">＋ Install</button></div></article>
+    <div class="settings-grid"><article class="card settings-section"><h2>Preferences</h2><p>Set the app’s appearance and budgeting defaults for this device.</p><div class="setting-row"><div><strong>Dark theme</strong><small>Use a darker interface in low light.</small></div><label class="switch"><input id="theme-setting" type="checkbox" ${document.documentElement.dataset.theme === 'dark' ? 'checked' : ''} aria-label="Enable dark theme"><span></span></label></div><div class="setting-row"><div><strong>Link savings movements to transactions</strong><small>Deposits become expenses and withdrawals become income. Off by default.</small></div><label class="switch"><input id="savings-link-setting" type="checkbox" ${state.data.savingsLinked ? 'checked' : ''} aria-label="Link savings activities to transactions"><span></span></label></div><div class="setting-row"><div><strong>Budget warning</strong><small>Warn when spending reaches this share of a budget.</small></div><select id="budget-alert-threshold" class="field-control preference-select" aria-label="Budget warning threshold">${alertOptions}</select></div><div class="setting-row"><div><strong>Week starts on</strong><small>Used by the weekly report preset.</small></div><select id="week-start" class="field-control preference-select" aria-label="First day of week">${weekOptions}</select></div><div class="setting-row"><div><strong>Currency</strong><small>Philippine Peso · PHP · en-PH</small></div><span class="badge">₱ PHP</span></div><div class="setting-row"><div><strong>Install PesoWise</strong><small>Add the app to this device’s home screen.</small></div><button type="button" class="button small primary" data-action="install-app">＋ Install</button></div></article>
     <article class="card settings-section" style="grid-column:1/-1"><h2>Transaction categories</h2><p>Manage categories used for new records. Categories with existing transactions cannot be removed.</p><div class="category-manage">${categoryGroup('Expense', expenseCategories)}${categoryGroup('Income', incomeCategories)}<div><button class="button small" type="button" data-action="add-category">＋ Add category</button></div></div></article>
-    <article class="card settings-section" style="grid-column:1/-1"><h2>Privacy & storage</h2><p>Financial records are saved automatically to IndexedDB, with recent recovery snapshots maintained on this device. Nothing is uploaded. Clearing browser site data removes both the records and snapshots. PesoWise has no account, analytics, or financial data transmission.</p><p style="margin-bottom:0">A local PIN can restrict access to the interface but would not encrypt the underlying database, so PIN protection is not enabled.</p></article></div>`;
+    <article class="card settings-section" style="grid-column:1/-1"><h2>Privacy & storage</h2><p>Financial records and recent recovery snapshots are saved automatically in this browser’s IndexedDB. They are separate from cached app files, so clearing only the cache does not delete your records. To erase them, clear PesoWise site data or app storage in your browser or device settings. Nothing is uploaded.</p><p style="margin-bottom:0">PesoWise has no account or analytics. A local PIN would not encrypt the underlying database, so PIN protection is not enabled.</p></article></div>`;
 }
 
 async function render() {
   state.page = location.hash.slice(1).split('?')[0] || 'dashboard';
   if (!['dashboard', 'transactions', 'budgets', 'savings', 'reports', 'settings'].includes(state.page)) state.page = 'dashboard';
-  document.querySelector('.theme-toggle').hidden = state.page !== 'dashboard';
   document.querySelectorAll('[data-page]').forEach(link => {
     const active = link.dataset.page === state.page;
     link.classList.toggle('active', active);
@@ -597,7 +607,7 @@ document.addEventListener('click', async event => {
     else if (action === 'report-period') {
       const now = new Date(); let start; let end = localDate(now);
       if (button.dataset.period === 'day') start = end;
-      else if (button.dataset.period === 'week') { const mondayOffset = (now.getDay() + 6) % 7; const monday = new Date(now); monday.setDate(now.getDate() - mondayOffset); start = localDate(monday); }
+      else if (button.dataset.period === 'week') start = localDate(weekStartDate(now, state.data.weekStartsOn));
       else if (button.dataset.period === 'year') start = `${now.getFullYear()}-01-01`;
       else start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
       state.report = { start, end }; renderReports();
@@ -635,6 +645,12 @@ document.addEventListener('change', async event => {
     applyTheme(event.target.checked ? 'dark' : 'light');
   } else if (event.target.id === 'savings-link-setting') {
     await setSetting('savingsLinked', event.target.checked); state.data.savingsLinked = event.target.checked; toast('Savings transaction linking updated.');
+  } else if (event.target.id === 'budget-alert-threshold') {
+    const value = Number(event.target.value);
+    await setSetting('budgetAlertThreshold', value); state.data.budgetAlertThreshold = value; toast(`Budget warning set to ${value}%.`);
+  } else if (event.target.id === 'week-start') {
+    const value = Number(event.target.value);
+    await setSetting('weekStartsOn', value); state.data.weekStartsOn = value; toast(`Week now starts on ${value === 1 ? 'Monday' : 'Sunday'}.`);
   } else if (event.target.matches('#budget-month')) {
     await render();
   } else if (event.target.matches('#report-start')) {
@@ -662,7 +678,6 @@ function applyTheme(theme) {
   }
 }
 
-document.querySelector('.theme-toggle').addEventListener('click', () => applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
 window.addEventListener('hashchange', () => render().catch(error => toast(error.message, 'error')));
 window.addEventListener('resize', () => {
   if (state.page === 'dashboard') { const stats = currentStats(); drawBarChart(document.querySelector('#dashboard-bars'), [stats.monthIncome], [stats.monthExpenses], ['This month']); }

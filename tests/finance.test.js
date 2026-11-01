@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validAmount, sumAmounts, cashBalance, plannedBudgetTotal, budgetActual, savingsBalance, summarizeTransactions } from '../js/finance.js';
+import { validAmount, sumAmounts, cashBalance, plannedBudgetTotal, budgetActual, savingsBalance, summarizeTransactions, weekStartDate } from '../js/finance.js';
 
 test('validates positive PHP amounts to two decimal places', () => {
   assert.equal(validAmount('0.01'), 0.01);
@@ -66,4 +66,12 @@ test('summarizes transactions inside an inclusive date range', () => {
     expenses: 3751,
     net: 6249
   });
+});
+
+test('starts weekly reports on the configured day', () => {
+  const wednesday = new Date(2026, 10, 4);
+  const monday = weekStartDate(wednesday, 1);
+  const sunday = weekStartDate(wednesday, 0);
+  assert.deepEqual([monday.getFullYear(), monday.getMonth(), monday.getDate()], [2026, 10, 2]);
+  assert.deepEqual([sunday.getFullYear(), sunday.getMonth(), sunday.getDate()], [2026, 10, 1]);
 });

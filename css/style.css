@@ -7,7 +7,7 @@
 
 /* Lavender glass-and-paper treatment inspired by the product reference. */
 @font-face{font-family:"Inter";src:url("../assets/fonts/inter-latin-variable.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
-:root{font-family:"Inter","Avenir Next","Segoe UI",sans-serif;color:#30264b;background:#f4f0ff;--green:#7456d7;--green-2:#6849ca;--mint:#a491f5;--mint-soft:#f0ecff;--ink:#30264b;--muted:#89829e;--line:#e9e3f5;--surface:rgba(255,255,255,.92);--surface-2:#f7f4ff;--danger:#c94c66;--shadow:0 12px 32px rgba(90,65,151,.09)}
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Segoe UI",sans-serif;color:#30264b;background:#f4f0ff;--green:#7456d7;--green-2:#6849ca;--mint:#a491f5;--mint-soft:#f0ecff;--ink:#30264b;--muted:#89829e;--line:#e9e3f5;--surface:rgba(255,255,255,.92);--surface-2:#f7f4ff;--danger:#c94c66;--shadow:0 12px 32px rgba(90,65,151,.09)}
 :root[data-theme="dark"]{color-scheme:dark;--green:#b7a5ff;--green-2:#a38bf4;--mint:#9a83ec;--mint-soft:#30264b;--ink:#f1edfc;--muted:#b0a7c7;--line:#403653;--surface:rgba(35,29,49,.96);--surface-2:#2b243a;--danger:#f292a4;--shadow:0 12px 32px rgba(0,0,0,.2);background:#191523}
 body{background-color:#f4f0ff;background-image:linear-gradient(135deg,rgba(233,225,255,.8),rgba(250,246,255,.82) 48%,rgba(235,231,255,.88)),repeating-linear-gradient(135deg,transparent 0 74px,rgba(125,99,198,.035) 75px 76px)}
 :root[data-theme="dark"] body{background-color:#191523;background-image:linear-gradient(135deg,#201a31,#191523 55%,#211b30)}
@@ -48,6 +48,7 @@ body{background-color:#f4f0ff;background-image:linear-gradient(135deg,rgba(233,2
 .template-amount>span{color:var(--muted);font-size:11px}
 .template-amount input{width:100%;min-width:0;min-height:36px;padding:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:11px}
 .template-amount:focus-within{border-color:#9c85e6;box-shadow:0 0 0 3px rgba(117,86,216,.12)}
+.preference-select{width:142px;flex:none}
 @media(max-width:560px){.template-budget-grid{grid-template-columns:1fr;gap:9px}}
 .legend i{background:#7657d8}
 .legend .legend-expense{background:#d9cff6}
@@ -159,7 +160,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 #page-title{margin:0;color:var(--ink);font-size:18px;font-weight:720;line-height:1.2;letter-spacing:0}
 #page-subtitle{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.35}
 .topbar-actions{width:auto;flex:none;gap:9px}
-.theme-toggle[hidden]{display:none}
 .topbar-page-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
 .topbar-page-actions .button{min-height:34px;padding:0 9px;border-radius:7px;font-size:9px;white-space:nowrap}
 .topbar-page-actions .button-icon{font-size:12px}
@@ -175,7 +175,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 	.mobile-brand{grid-area:brand}
 	.topbar-page-heading{grid-area:heading}
 	.topbar-actions{display:contents}
-	.theme-toggle{grid-area:theme;justify-self:end}
 	.topbar-page-actions{grid-area:actions;justify-content:space-between;gap:5px;width:100%}
 	.topbar-page-actions .button{width:38px;min-width:38px;height:36px;min-height:36px;justify-content:center;padding:0}
 	.topbar-page-actions .button-label{display:none}
