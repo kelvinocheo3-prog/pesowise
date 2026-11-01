@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#7355d9">
+  <meta name="description" content="A private, offline-first personal finance tracker.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="PesoWise">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>PesoWise | Your money, in balance</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard" aria-label="PesoWise dashboard">
+        <span class="brand-mark" aria-hidden="true">₱</span>
+        <span><strong>PesoWise</strong><small>PERSONAL FINANCE</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="primary-nav" id="primary-nav">
+        <a href="#dashboard" data-page="dashboard" class="nav-link active"><span class="nav-icon">◫</span>Overview</a>
+        <a href="#transactions" data-page="transactions" class="nav-link"><span class="nav-icon">↔</span>Transactions</a>
+        <a href="#budgets" data-page="budgets" class="nav-link"><span class="nav-icon">▤</span>Budgets</a>
+        <a href="#savings" data-page="savings" class="nav-link"><span class="nav-icon">◎</span>Savings goals</a>
+        <a href="#reports" data-page="reports" class="nav-link"><span class="nav-icon">▥</span>Reports</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="privacy-note"><span class="privacy-dot"></span><span><strong>Your data stays here</strong><small>Stored on this device</small></span></div>
+        <a href="#settings" data-page="settings" class="nav-link settings-link"><span class="nav-icon">⚙</span>Settings</a>
+      </div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">₱</span><strong>PesoWise</strong></div>
+        <div class="topbar-page-heading"><div id="page-eyebrow" class="topbar-eyebrow"></div><h1 id="page-title"></h1><p id="page-subtitle"></p></div>
+        <div class="topbar-actions">
+          <div id="page-actions" class="topbar-page-actions"></div>
+          <button class="icon-button theme-toggle" type="button" title="Switch theme" aria-label="Switch theme"><span aria-hidden="true">◐</span></button>
+        </div>
+      </header>
+      <section id="app" class="page-content" aria-live="polite"></section>
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <a href="#dashboard" data-page="dashboard" class="active"><span>◫</span><small>Home</small></a>
+        <a href="#transactions" data-page="transactions"><span>↔</span><small>Activity</small></a>
+        <a href="#budgets" data-page="budgets"><span>▤</span><small>Budgets</small></a>
+        <a href="#savings" data-page="savings"><span>◎</span><small>Savings</small></a>
+        <a href="#reports" data-page="reports"><span>▥</span><small>Reports</small></a>
+      </nav>
+    </main>
+  </div>
+  <div id="dialog-root"></div>
+  <div id="toast-region" class="toast-region" aria-live="assertive" aria-atomic="true"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
