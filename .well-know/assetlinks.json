@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "app.vercel.budget_tracker_gv5htve5s_kels3.twa",
-        "sha256_cert_fingerprints": ["17:25:CB:DA:83:1A:A1:83:B2:84:6D:FA:80:1C:2F:E1:7E:EF:3F:B6:CA:99:84:BF:53:E8:6B:97:FE:0F:55:C4"]
+        "package_name": "app.vercel.budget_tracker_ui3sjwcyp_kels3.twa",
+        "sha256_cert_fingerprints": ["89:52:24:39:DD:2B:A4:C1:EA:ED:95:F3:CF:87:88:76:B1:FE:BF:2E:71:DD:03:41:F9:1B:31:1C:00:62:EF:3F"]
       }
     }]
