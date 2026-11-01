@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pesowise-shell-v19';
+const CACHE_NAME = 'pesowise-shell-v20';
 const APP_ASSETS = [
   './',
   './index.html',
@@ -9,12 +9,9 @@ const APP_ASSETS = [
   './apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './css/style.css',
-  './css/mobile-fix.css',
   './assets/fonts/inter-latin-variable.woff2',
   './js/database.js',
-  './js/finance.js',
-  './js/app.js'
+  './js/finance.js'
 ];
 
 self.addEventListener('install', event => {
