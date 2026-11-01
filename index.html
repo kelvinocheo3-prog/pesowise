@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="PesoWise">
 <title>PesoWise | Your money, in balance</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 @font-face{font-family:Inter;src:url(assets/fonts/inter-latin-variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
@@ -118,6 +118,7 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
 .hint{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:14px}
 .q{width:24px;height:24px;border-radius:50%;background:#fff;color:#2f4bff;display:grid;place-items:center;font-weight:800;font-size:15px}
 .ring:active{transform:scale(.97)}
+.logo{border-radius:14px;object-fit:cover;flex:none}
 </style>
 </head>
 <body>
@@ -144,7 +145,7 @@ const inMonth=(t,m)=>t.date?.slice(0,7)===m;
 const byDate=(a,b)=>b.date.localeCompare(a.date)||(b.createdAt||"").localeCompare(a.createdAt||"");
 const toast=m=>{navigator.vibrate?.(12);const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2400)};
 const empty=(a,b)=>`<div class="empty"><b>${a}</b>${b}</div>`;
-const top=(t,s="")=>`<div class="top"><div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
+const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-items:center;gap:12px">${logo?`<img class="logo" src="icons/icon-192.png" alt="" width="48" height="48">`:""}<div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
 const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
@@ -156,7 +157,7 @@ function view(){
   const T=TABS.map(t=>`<a href="#${t[0]}" class="${t[0]===page?"on":""}" ${t[0]===page?'aria-current="page"':""}>${ic(t[2])}${t[1]}</a>`);
   $("#nav").innerHTML=T[0]+T[1]+`<button class="add" data-a="add" aria-label="${page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction"}">${ic("plus")}</button>`+T[2]+T[3];
 }
-let RING={};
+let RING={},deferred=null;
 function vDash(){
   const m=mk(),now=new Date(),dl=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
   const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense")),bal=cashBalance(S.tx);
@@ -164,8 +165,9 @@ function vDash(){
   const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
   RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
-  return top("Home",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}))+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-v="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button><button class="hint" data-a="ring"><span class="q" aria-hidden="true">?</span> How is this worked out?</button></section>
-  <div class="stats"><div><small>Money you have</small><b data-v="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-v="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-v="${exp}">${peso(exp)}</b></div></div>
+  return top("Home",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-count="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button><button class="hint" data-a="ring"><span class="q" aria-hidden="true">?</span> How is this worked out?</button></section>
+  <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
+  ${deferred&&!matchMedia("(display-mode: standalone)").matches?`<div class="card" style="padding:14px 16px;margin-top:12px;display:flex;align-items:center;gap:12px"><img class="logo" src="icons/icon-192.png" alt="" width="44" height="44"><div class="grow"><b>Install PesoWise</b><span style="white-space:normal">Open it from your home screen, even offline.</span></div><button class="chip on" data-a="install">Install</button></div>`:""}
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
 }
 function ringSheet(){
@@ -180,7 +182,7 @@ function ringSheet(){
 }
 function vAct(){
   const list=S.tx.filter(t=>filter==="all"||t.type===filter).sort(byDate),g={};list.forEach(t=>(g[t.date]=g[t.date]||[]).push(t));
-  const yd=new Date(Date.now()-864e5).toISOString().slice(0,10),lab=d=>d===today()?"Today":d===yd?"Yesterday":d;
+  const yd=new Date(Date.now()-864e5).toISOString().slice(0,10),tm=new Date(Date.now()+864e5).toISOString().slice(0,10),lab=d=>d===today()?"Today":d===yd?"Yesterday":d===tm?"Tomorrow":new Date(d+"T00:00").toLocaleDateString("en-PH",{month:"long",day:"numeric",year:"numeric"});
   return top("Activity")+`<div class="chips">${[["all","All"],["expense","Expenses"],["income","Income"]].map(c=>`<button class="chip ${filter===c[0]?"on":""}" data-a="filter" data-v="${c[0]}">${c[1]}</button>`).join("")}</div>`+
   (list.length?Object.keys(g).map(d=>`<h2>${lab(d)}</h2><div class="card">${g[d].map(txRow).join("")}</div>`).join(""):`<div class="card">${empty("No transactions","Tap + to record money coming in or going out.")}</div>`);
 }
@@ -229,8 +231,9 @@ function amountSheet(title,label,val,onSave,extra=""){
   setTimeout(()=>$("#v").focus(),50);
 }
 function settings(){
-  sheet(`<h3>Settings</h3><label>Theme</label><div class="chips">${[["auto","Auto"],["light","Light"],["dark","Dark"]].map(t=>`<button class="chip ${theme===t[0]?"on":""}" data-a="theme" data-v="${t[0]}">${t[1]}</button>`).join("")}</div><p style="color:var(--mute);font-size:14px">Your data stays on this device. Export a CSV from Reports to keep a copy. On Android, use your browser menu to install the app.</p><button class="btn ghost" data-a="close">Close</button>`);
+  sheet(`<h3>Settings</h3><label>Theme</label><div class="chips">${[["auto","Auto"],["light","Light"],["dark","Dark"]].map(t=>`<button class="chip ${theme===t[0]?"on":""}" data-a="theme" data-v="${t[0]}">${t[1]}</button>`).join("")}</div>${instBlock()}<p style="color:var(--mute);font-size:14px">Your data stays on this device. Export a CSV from Reports to keep a copy. On Android, use your browser menu to install the app.</p><button class="btn ghost" data-a="close">Close</button>`);
 }
+const instBlock=()=>matchMedia("(display-mode: standalone)").matches?`<p style="color:var(--inc);font-weight:700">✓ Installed on this phone</p>`:deferred?`<button class="btn" data-a="install">Install app on this phone</button>`:`<p style="color:var(--mute);font-size:14px"><b>Install on Android:</b> open this page in Chrome, tap the ⋮ menu, then tap <b>Install app</b> or <b>Add to Home screen</b>.</p>`;
 const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",theme);
 
 document.addEventListener("click",async e=>{
@@ -238,6 +241,7 @@ document.addEventListener("click",async e=>{
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
   else if(a==="plan"){planTab=v;view()}
   else if(a==="ring")ringSheet();
+  else if(a==="install"){if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
   else if(a==="gotoplan"){close();planTab="budgets";location.hash="plan"}
   else if(a==="close")close();
   else if(a==="settings")settings();
@@ -272,7 +276,7 @@ const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 function enter(){
   if(calm())return;
   const a=$("#app");a.classList.remove("enter");void a.offsetWidth;a.classList.add("enter");setTimeout(()=>a.classList.remove("enter"),900);
-  document.querySelectorAll("[data-v]").forEach(el=>{const v=+el.dataset.v,t0=performance.now(),f=t=>{const p=Math.min(1,(t-t0)/900),k=1-Math.pow(1-p,3);el.textContent=peso(v*k);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+  document.querySelectorAll("[data-count]").forEach(el=>{const v=+el.dataset.count,t0=performance.now(),f=t=>{const p=Math.min(1,(t-t0)/900),k=1-Math.pow(1-p,3);el.textContent=peso(v*k);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
 }
 const order=["dashboard","transactions","plan","reports"];
 const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard"};
@@ -284,6 +288,8 @@ function go(){
   if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.dir=dir;document.startViewTransition(swap)}
   else{swap();if(!matchMedia("(prefers-reduced-motion: reduce)").matches)$("#app").animate([{opacity:0,transform:`translateX(${dir==="fwd"?28:-28}px)`},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})}
 }
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(curPage==="dashboard"&&!$("#shade").classList.contains("show"))view()});
+window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed");view()});
 window.addEventListener("hashchange",go);
 (async()=>{
   try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view();enter()}
