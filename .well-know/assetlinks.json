@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.budget_tracker_gv5htve5s_kels3.twa",
+        "sha256_cert_fingerprints": ["17:25:CB:DA:83:1A:A1:83:B2:84:6D:FA:80:1C:2F:E1:7E:EF:3F:B6:CA:99:84:BF:53:E8:6B:97:FE:0F:55:C4"]
+      }
+    }]
