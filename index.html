@@ -107,9 +107,10 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
 .row,.chip,.seg button,.btn,.ib,.link{transition:background-color .15s,transform .15s,color .15s}
 .row:active{background:var(--bg)}.ib:active,.chip:active{transform:scale(.95)}
 @keyframes grow{from{transform:scaleX(0)}}
-.bar i{transform-origin:left;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+.bar i{transform-origin:left}
+#app.enter .bar i{animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes ring{from{stroke-dasharray:0 327}}
-.r1{animation:ring .9s cubic-bezier(.2,.8,.2,1) both}
+#app.enter .r1{animation:ring .9s cubic-bezier(.2,.8,.2,1) both}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .hero .big{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:4px 0 18px}
 .hero small{font-size:14px;font-weight:600;opacity:.9}
@@ -125,6 +126,30 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect width="7" height="9" x="3" y="3" rx="1" />
+  <rect width="7" height="5" x="14" y="3" rx="1" />
+  <rect width="7" height="9" x="14" y="12" rx="1" />
+  <rect width="7" height="5" x="3" y="16" rx="1" />
+</symbol><symbol id="arrow-left-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8 3 4 7l4 4" />
+  <path d="M4 7h16" />
+  <path d="m16 21 4-4-4-4" />
+  <path d="M20 17H4" />
+</symbol><symbol id="wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+</symbol><symbol id="chart-no-axes-column-increasing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 21v-6" />
+  <path d="M12 21V9" />
+  <path d="M19 21V3" />
+</symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+  <circle cx="12" cy="12" r="3" />
+</symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 12h14" />
+  <path d="M12 5v14" />
+</symbol></svg>
 <div id="app" aria-live="polite"></div>
 <nav id="nav" aria-label="Main navigation"></nav>
 <div class="shade" id="shade"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
@@ -137,7 +162,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2);
 const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const mk=()=>today().slice(0,7);
-const ic=n=>`<svg class="ic"><use href="./assets/lucide-sprite.svg#${n}"></use></svg>`;
+const ic=n=>`<svg class="ic"><use href="#${n}"></use></svg>`;
 const EM={Food:"🍚",Transportation:"🚌",Housing:"🏠",Utilities:"💡",Shopping:"🛍️",Healthcare:"💊",Education:"📚",Entertainment:"🎬","Personal Care":"🧴",Family:"👪",Salary:"💼",Business:"🏪",Freelance:"💻",Allowance:"🎒",Investment:"📈",Gifts:"🎁",Other:"✨"};
 const em=c=>EM[c]||"🏷️";
 const TABS=[["dashboard","Home","layout-dashboard"],["transactions","Activity","arrow-left-right"],["plan","Plan","wallet"],["reports","Insights","chart-no-axes-column-increasing"]];
@@ -157,8 +182,10 @@ function view(){
   if(r==="budgets"||r==="savings"){planTab=r==="savings"?"goals":"budgets";r="plan"}
   const page=TABS.some(t=>t[0]===r)?r:"dashboard";curPage=page;
   $("#app").innerHTML={dashboard:vDash,transactions:vAct,plan:vPlan,reports:vRep}[page]();
-  const T=TABS.map(t=>`<a href="#${t[0]}" class="${t[0]===page?"on":""}" ${t[0]===page?'aria-current="page"':""}>${ic(t[2])}${t[1]}</a>`);
-  $("#nav").innerHTML=T[0]+T[1]+`<button class="add" data-a="add" aria-label="${page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction"}">${ic("plus")}</button>`+T[2]+T[3];
+  const nv=$("#nav"),link=t=>`<a href="#${t[0]}">${ic(t[2])}${t[1]}</a>`;
+  if(!nv.children.length)nv.innerHTML=TABS.slice(0,2).map(link).join("")+`<button class="add" data-a="add">${ic("plus")}</button>`+TABS.slice(2).map(link).join("");
+  nv.querySelectorAll("a").forEach(a=>{const on=a.getAttribute("href")==="#"+page;a.classList.toggle("on",on);if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  nv.querySelector(".add").setAttribute("aria-label",page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction");
 }
 let RING={},deferred=null;
 function vDash(){
