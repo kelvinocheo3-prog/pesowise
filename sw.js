@@ -1,10 +1,11 @@
-const CACHE_NAME = 'pesowise-shell-v16';
+const CACHE_NAME = 'pesowise-shell-v18';
 const APP_ASSETS = [
   './',
   './index.html',
   './offline.html',
   './manifest.webmanifest',
   './icon.svg',
+  './assets/lucide-sprite.svg',
   './apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',

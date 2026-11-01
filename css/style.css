@@ -190,3 +190,73 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 ::view-transition-new(page-content){animation:page-enter .22s cubic-bezier(.2,.7,.25,1) both}
 @keyframes page-exit{to{opacity:0;transform:translateY(-4px)}}
 @media(prefers-reduced-motion:reduce){::view-transition-old(page-content),::view-transition-new(page-content){animation:none}#app.page-enter{animation:none}}
+
+:root{
+	--color-primary:#7355d9;
+	--color-background:#f6f3ff;
+	--color-card:#fff;
+	--color-income:#167a45;
+	--color-expense:#b42336;
+	--color-text:#2a2340;
+	--color-muted:#5e586d;
+	--color-border:#e5e0ef;
+	--space-1:4px;
+	--space-2:8px;
+	--space-3:16px;
+	--space-4:24px;
+	--font-caption:14px;
+	--font-body:16px;
+	--font-title:24px;
+	--font-balance:36px;
+	--radius-control:12px;
+	--radius-card:16px;
+	--radius-sheet:20px;
+	--shadow-card:0 4px 18px rgba(42,35,64,.08);
+	--shadow-raised:0 8px 24px rgba(42,35,64,.12);
+}
+:root[data-theme="dark"]{
+	--color-background:#191523;
+	--color-card:#272333;
+	--color-income:#64d596;
+	--color-expense:#ff737a;
+	--color-text:#f3eefc;
+	--color-muted:#c6bfd2;
+	--color-border:#423c50;
+}
+:root{font-family:"Inter",system-ui,sans-serif;font-size:var(--font-body);color:var(--color-text);background:var(--color-background);--green:var(--color-primary);--green-2:var(--color-primary);--mint:#e7e0fa;--mint-soft:#f0ebff;--ink:var(--color-text);--muted:var(--color-muted);--line:var(--color-border);--surface:var(--color-card);--surface-2:#faf9fd;--danger:var(--color-expense);--shadow:var(--shadow-card)}
+body{font-family:inherit;font-size:var(--font-body);color:var(--color-text);background:var(--color-background);background-image:none}
+:root[data-theme="dark"] body{background:var(--color-background);background-image:none}
+.sidebar,.topbar{background:var(--color-card);backdrop-filter:none}
+.card{background:var(--color-card);border:1px solid var(--color-border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);backdrop-filter:none}
+.button,.field-control,.form-field input,.form-field select,.form-field textarea{border-radius:var(--radius-control)}
+.brand-mark{background:var(--color-primary);box-shadow:none}
+.nav-link.active{background:#eee9ff;color:var(--color-primary)}
+.button.primary{border-color:var(--color-primary);background:var(--color-primary);box-shadow:none;color:#fff}
+.button.primary:hover{border-color:#6044c2;background:#6044c2}
+.icon{width:24px;height:24px;flex:none;stroke-width:1.75}
+.metric-icon{color:var(--color-primary);background:#eee9ff}
+.transaction-symbol,.goal-icon{color:var(--color-primary);background:#eee9ff}
+.page-heading h1,#page-title{font-size:var(--font-title);font-weight:700;color:var(--color-text)}
+.page-subtitle,#page-subtitle{font-size:var(--font-caption);color:var(--color-muted)}
+.eyebrow,.topbar-eyebrow{color:var(--color-primary)}
+.button-label,.nav-link,.field-control,.form-field input,.form-field select,.form-field textarea{font-family:inherit}
+.progress-fill,.budget-meter span,.goal-progress span{background:var(--color-primary)}
+.category-dot{background:var(--color-primary)}
+.metric-card{background:var(--color-card)}
+.chart-card,.report-card{background:var(--color-card)}
+.legend i{background:var(--color-income)}
+.legend .legend-expense{background:#d7ccef}
+.amount.income{color:var(--color-income)}
+.amount.expense{color:var(--color-expense)}
+.topbar-page-actions .button-icon{width:24px;height:24px}
+.page-content{padding:var(--space-4) var(--space-4) calc(var(--space-4) * 2)}
+.page-subtitle{font-size:var(--font-caption);color:var(--color-muted)}
+.section-row{margin-top:var(--space-4);margin-bottom:var(--space-2)}
+.metric-value{font-size:var(--font-balance);font-weight:700;color:var(--color-text)}
+.metric-label,.form-field label,.data-table td,.button{font-size:var(--font-body)}
+.metric-foot,.form-help,.page-subtitle,#page-subtitle,.setting-row small{font-size:var(--font-caption)}
+.button.small{font-size:var(--font-caption)}
+.chart-card,.report-card{padding:var(--space-4);border-radius:var(--radius-card)}
+.progress-track,.budget-meter,.goal-progress{height:var(--space-1)}
+.dialog{border-radius:var(--radius-sheet);box-shadow:var(--shadow-raised)}
+@media(max-width:760px){.page-content{padding:var(--space-3) var(--space-3) var(--space-4)}.chart-card,.report-card{padding:var(--space-3)}}
