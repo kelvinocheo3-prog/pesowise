@@ -588,6 +588,11 @@ document.addEventListener('click', async event => {
   const action = button.dataset.action; const recordId = button.dataset.id;
   try {
     if (action === 'close-dialog' || (action === 'backdrop-close' && event.target === button)) closeDialog();
+    else if (action === 'fab') {
+      if (state.page === 'budgets') budgetForm();
+      else if (state.page === 'savings') goalForm();
+      else openDialog('Add', 'What would you like to record?', `<div class="add-choice">${addButton('Add expense', 'transaction-expense', 'trending-down')}${addButton('Add income', 'transaction-income', 'trending-up')}</div>`);
+    }
     else if (action === 'add-transaction') transactionForm();
     else if (action === 'add-transaction-income') transactionForm(null, 'income');
     else if (action === 'add-transaction-expense') transactionForm(null, 'expense');
