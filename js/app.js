@@ -71,7 +71,10 @@ function pageHeading(eyebrow, title, subtitle, actions = '') {
   document.querySelector('#page-eyebrow').textContent = eyebrow;
   document.querySelector('#page-title').textContent = title;
   document.querySelector('#page-subtitle').textContent = subtitle;
-  document.querySelector('#page-actions').innerHTML = actions;
+  const installAction = state.installPrompt && state.page !== 'settings'
+    ? '<button class="button primary" type="button" data-action="install-app" aria-label="Install PesoWise" title="Install PesoWise"><span class="button-icon" aria-hidden="true">↓</span><span class="button-label">Install app</span></button>'
+    : '';
+  document.querySelector('#page-actions').innerHTML = `${actions}${installAction}`;
   return '';
 }
 
@@ -683,7 +686,11 @@ window.addEventListener('resize', () => {
   if (state.page === 'dashboard') { const stats = currentStats(); drawBarChart(document.querySelector('#dashboard-bars'), [stats.monthIncome], [stats.monthExpenses], ['This month']); }
   if (state.page === 'reports') renderReports();
 });
-window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); state.installPrompt = event; if (state.page === 'settings') renderSettings(); });
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  state.installPrompt = event;
+  render().catch(error => toast(error.message, 'error'));
+});
 window.addEventListener('appinstalled', () => { state.installPrompt = null; toast('PesoWise installed.'); if (state.page === 'settings') renderSettings(); });
 
 async function registerServiceWorker() {
