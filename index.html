@@ -108,6 +108,16 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
 @keyframes ring{from{stroke-dasharray:0 327}}
 .r1{animation:ring .9s cubic-bezier(.2,.8,.2,1) both}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.hero .big{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:4px 0 18px}
+.hero small{font-size:14px;font-weight:600;opacity:.9}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}
+.pair div{background:rgba(255,255,255,.14);border-radius:18px;padding:12px 14px}
+.pair small{display:block;font-size:13px}
+.pair b{font-size:18px}
+.ring{display:block;background:none;padding:0}
+.hint{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:14px}
+.q{width:24px;height:24px;border-radius:50%;background:#fff;color:#2f4bff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.ring:active{transform:scale(.97)}
 </style>
 </head>
 <body>
@@ -126,7 +136,7 @@ const mk=()=>today().slice(0,7);
 const ic=n=>`<svg class="ic"><use href="./assets/lucide-sprite.svg#${n}"></use></svg>`;
 const EM={Food:"🍚",Transportation:"🚌",Housing:"🏠",Utilities:"💡",Shopping:"🛍️",Healthcare:"💊",Education:"📚",Entertainment:"🎬","Personal Care":"🧴",Family:"👪",Salary:"💼",Business:"🏪",Freelance:"💻",Allowance:"🎒",Investment:"📈",Gifts:"🎁",Other:"✨"};
 const em=c=>EM[c]||"🏷️";
-const TABS=[["dashboard","Today","layout-dashboard"],["transactions","Activity","arrow-left-right"],["plan","Plan","wallet"],["reports","Insights","chart-no-axes-column-increasing"]];
+const TABS=[["dashboard","Home","layout-dashboard"],["transactions","Activity","arrow-left-right"],["plan","Plan","wallet"],["reports","Insights","chart-no-axes-column-increasing"]];
 let S={tx:[],budgets:[],goals:[],acts:[],cats:[]},filter="all",theme="auto",planTab="budgets",curPage="dashboard";
 async function load(){const [tx,budgets,goals,acts,cats]=await Promise.all(["transactions","budgets","savingsGoals","savingsActivities","categories"].map(getAll));S={tx,budgets,goals,acts,cats}}
 const catsOf=k=>S.cats.filter(c=>c.kind===k).map(c=>c.name);
@@ -146,16 +156,27 @@ function view(){
   const T=TABS.map(t=>`<a href="#${t[0]}" class="${t[0]===page?"on":""}" ${t[0]===page?'aria-current="page"':""}>${ic(t[2])}${t[1]}</a>`);
   $("#nav").innerHTML=T[0]+T[1]+`<button class="add" data-a="add" aria-label="${page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction"}">${ic("plus")}</button>`+T[2]+T[3];
 }
+let RING={};
 function vDash(){
-  const m=mk(),now=new Date(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),dl=dim-now.getDate()+1;
-  const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense"));
-  const ts=sumAmounts(S.tx.filter(t=>t.type==="expense"&&t.date===today())),mb=S.budgets.filter(b=>b.month===m),hasB=mb.length>0;
-  const rem=hasB?plannedBudgetTotal(mb)-exp:cashBalance(S.tx),allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
-  const note=hasB?`${peso(Math.max(0,rem))} left in your budgets for the next ${dl} day${dl>1?"s":""}.`:`Based on your balance over the next ${dl} days. Set budgets in Plan for a better estimate.`;
+  const m=mk(),now=new Date(),dl=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
+  const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense")),bal=cashBalance(S.tx);
+  const ts=sumAmounts(S.tx.filter(t=>t.type==="expense"&&t.date===today())),mb=S.budgets.filter(b=>b.month===m),hasB=mb.length>0,tot=hasB?plannedBudgetTotal(mb):0;
+  const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
+  RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
-  return top("Today",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}))+`<section class="hero"><div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><div class="ringtxt"><small>${left>=0?"Left to spend today":"Over today’s limit by"}</small><b data-v="${Math.abs(left)}">${peso(Math.abs(left))}</b></div></div><p>${note}</p></section>
-  <div class="stats"><div><small>Balance</small><b data-v="${cashBalance(S.tx)}">${peso(cashBalance(S.tx))}</b></div><div><small>Income</small><b data-v="${inc}">${peso(inc)}</b></div><div><small>Spent</small><b data-v="${exp}">${peso(exp)}</b></div></div>
-  <h2>Latest</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
+  return top("Home",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}))+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-v="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button><button class="hint" data-a="ring"><span class="q" aria-hidden="true">?</span> How is this worked out?</button></section>
+  <div class="stats"><div><small>Money you have</small><b data-v="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-v="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-v="${exp}">${peso(exp)}</b></div></div>
+  <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
+}
+function ringSheet(){
+  const R=RING,st=(t,v,d)=>`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:12px"><b>${t}</b><b>${v}</b></div><div style="color:var(--mute);font-size:14px;margin-top:2px">${d}</div></div>`;
+  sheet(`<h3>How your daily amount works</h3><p style="margin:0 0 6px;color:var(--mute)">This is how much you can spend today and still stay on track for the rest of the month.</p>`+
+  st("1. Money left this month",peso(Math.max(0,R.rem)),R.hasB?`Your budgets add up to ${peso(R.tot)} and you have spent ${peso(R.exp)} so far this month.`:`You haven’t set any budgets yet, so we use the money you have now (${peso(R.bal)}).`)+
+  st("2. Days left, including today",String(R.dl),"We spread your money evenly over these days.")+
+  st("3. Your amount for each day",peso(R.allow),`${peso(Math.max(0,R.rem)+R.ts)} ÷ ${R.dl} days. The ring shows how much of this is still left.`)+
+  st("4. Spent today",peso(R.ts),R.left>=0?`So you can still spend <b>${peso(R.left)}</b> today.`:`That is <b>${peso(-R.left)}</b> more than your amount for today.`)+
+  `<p style="color:var(--mute);font-size:14px">The ring starts fresh every day and changes when you add or delete a transaction.</p>`+
+  (R.hasB?"":`<button class="btn" data-a="gotoplan">Set a budget</button>`)+`<button class="btn ghost" data-a="close">Got it</button>`);
 }
 function vAct(){
   const list=S.tx.filter(t=>filter==="all"||t.type===filter).sort(byDate),g={};list.forEach(t=>(g[t.date]=g[t.date]||[]).push(t));
@@ -216,6 +237,8 @@ document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
   else if(a==="plan"){planTab=v;view()}
+  else if(a==="ring")ringSheet();
+  else if(a==="gotoplan"){close();planTab="budgets";location.hash="plan"}
   else if(a==="close")close();
   else if(a==="settings")settings();
   else if(a==="theme"){theme=v;applyTheme();await setSetting("themeMode",v);settings()}
