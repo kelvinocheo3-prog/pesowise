@@ -81,6 +81,9 @@ label{display:block;font-size:13px;color:var(--mute);font-weight:700;margin:0 0 
 
 /* Smooth motion */
 #app{view-transition-name:page}
+nav{view-transition-name:navbar}
+::view-transition-old(navbar){display:none}
+::view-transition-new(navbar){animation:none}
 ::view-transition-old(root),::view-transition-new(root){animation:none}
 @keyframes outL{to{opacity:0;transform:translateX(-36px) scale(.97)}}
 @keyframes outR{to{opacity:0;transform:translateX(36px) scale(.97)}}
