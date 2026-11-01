@@ -167,7 +167,6 @@ function vDash(){
   const recent=[...S.tx].sort(byDate).slice(0,5);
   return top("Home",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-count="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button><button class="hint" data-a="ring"><span class="q" aria-hidden="true">?</span> How is this worked out?</button></section>
   <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
-  ${deferred&&!matchMedia("(display-mode: standalone)").matches?`<div class="card" style="padding:14px 16px;margin-top:12px;display:flex;align-items:center;gap:12px"><img class="logo" src="icons/icon-192.png" alt="" width="44" height="44"><div class="grow"><b>Install PesoWise</b><span style="white-space:normal">Open it from your home screen, even offline.</span></div><button class="chip on" data-a="install">Install</button></div>`:""}
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
 }
 function ringSheet(){
@@ -231,9 +230,12 @@ function amountSheet(title,label,val,onSave,extra=""){
   setTimeout(()=>$("#v").focus(),50);
 }
 function settings(){
-  sheet(`<h3>Settings</h3><label>Theme</label><div class="chips">${[["auto","Auto"],["light","Light"],["dark","Dark"]].map(t=>`<button class="chip ${theme===t[0]?"on":""}" data-a="theme" data-v="${t[0]}">${t[1]}</button>`).join("")}</div>${instBlock()}<p style="color:var(--mute);font-size:14px">Your data stays on this device. Export a CSV from Reports to keep a copy. On Android, use your browser menu to install the app.</p><button class="btn ghost" data-a="close">Close</button>`);
+  sheet(`<h3>Settings</h3><label>Install app</label>${instBlock()}<label>Theme</label><div class="chips">${[["auto","Auto"],["light","Light"],["dark","Dark"]].map(t=>`<button class="chip ${theme===t[0]?"on":""}" data-a="theme" data-v="${t[0]}">${t[1]}</button>`).join("")}</div><p style="color:var(--mute);font-size:14px">Your data stays on this device. Export a CSV from Reports to keep a copy. On Android, use your browser menu to install the app.</p><button class="btn ghost" data-a="close">Close</button>`);
 }
-const instBlock=()=>matchMedia("(display-mode: standalone)").matches?`<p style="color:var(--inc);font-weight:700">✓ Installed on this phone</p>`:deferred?`<button class="btn" data-a="install">Install app on this phone</button>`:`<p style="color:var(--mute);font-size:14px"><b>Install on Android:</b> open this page in Chrome, tap the ⋮ menu, then tap <b>Install app</b> or <b>Add to Home screen</b>.</p>`;
+const instBlock=()=>{const box=h=>`<div style="background:var(--bg);border-radius:18px;padding:14px;margin-bottom:16px">${h}</div>`;
+  if(matchMedia("(display-mode: standalone)").matches)return box(`<b style="color:var(--inc)">✓ Installed on this phone</b>`);
+  if(deferred)return box(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><img class="logo" src="icons/icon-192.png" alt="" width="44" height="44"><span style="color:var(--mute);font-size:14px">Add PesoWise to your home screen. It opens like a real app, even without internet.</span></div><button class="btn" data-a="install" style="margin:0">Install app</button>`);
+  return box(`<span style="color:var(--mute);font-size:14px">To install, open this page in <b>Chrome</b>, tap the <b>⋮</b> menu, then tap <b>Install app</b> or <b>Add to Home screen</b>.</span>`)};
 const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",theme);
 
 document.addEventListener("click",async e=>{
@@ -288,8 +290,8 @@ function go(){
   if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.dir=dir;document.startViewTransition(swap)}
   else{swap();if(!matchMedia("(prefers-reduced-motion: reduce)").matches)$("#app").animate([{opacity:0,transform:`translateX(${dir==="fwd"?28:-28}px)`},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})}
 }
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(curPage==="dashboard"&&!$("#shade").classList.contains("show"))view()});
-window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed");view()});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e});
+window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed")});
 window.addEventListener("hashchange",go);
 (async()=>{
   try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view();enter()}
