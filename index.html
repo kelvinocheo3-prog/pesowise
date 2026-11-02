@@ -212,7 +212,9 @@ const em=c=>EM[c]||"🏷️";
 const TABS=[["dashboard","Home","layout-dashboard"],["transactions","Activity","arrow-left-right"],["plan","Plan","wallet"],["reports","Insights","chart-no-axes-column-increasing"]];
 let S={tx:[],budgets:[],goals:[],acts:[],cats:[]},filter="all",theme="auto",planTab="budgets",curPage="dashboard";
 async function load(){const [tx,budgets,goals,acts,cats]=await Promise.all(["transactions","budgets","savingsGoals","savingsActivities","categories"].map(getAll));S={tx,budgets,goals,acts,cats}}
-const catsOf=k=>S.cats.filter(c=>c.kind===k).map(c=>c.name);
+/* FIX: catsOf() falls back to built-in defaults if S.cats is missing or empty */
+const DEFAULT_CATS={expense:["Food","Transportation","Housing","Utilities","Shopping","Healthcare","Education","Entertainment","Personal Care","Family","Other"],income:["Salary","Business","Freelance","Allowance","Investment","Gifts","Other"]};
+const catsOf=k=>{const cats=Array.isArray(S?.cats)?S.cats:[];const names=cats.filter(c=>c?.kind===k&&typeof c?.name==="string").map(c=>c.name);return names.length?names:(DEFAULT_CATS[k]||[])};
 const inMonth=(t,m)=>t.date?.slice(0,7)===m;
 const byDate=(a,b)=>b.date.localeCompare(a.date)||(b.createdAt||"").localeCompare(a.createdAt||"");
 const toast=m=>{navigator.vibrate?.(12);const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2400)};
@@ -287,8 +289,9 @@ $("#shade").addEventListener("click",e=>{if(e.target.id==="shade")close()});
 const err=m=>{$("#er").textContent=m};
 
 let d={};
+/* FIX: txSheet() falls back to "Other" when the category list is empty */
 function txSheet(){
-  const L=catsOf(d.type);if(!L.includes(d.cat))d.cat=L[0];
+  const L=catsOf(d.type);if(!L.includes(d.cat))d.cat=L[0]||"Other";
   sheet(`<h3>${d.id?"Edit transaction":"Add transaction"}</h3><div class="seg"><button data-a="type" data-v="expense" class="${d.type==="expense"?"on":""}">Expense</button><button data-a="type" data-v="income" class="${d.type==="income"?"on":""}">Income</button></div>
   <label for="a">Amount</label><input class="in amount" id="a" inputmode="decimal" placeholder="₱0.00" value="${esc(d.amt||"")}">
   <label>Category</label><div class="chips">${L.map(c=>`<button class="chip ${d.cat===c?"on":""}" data-a="cat" data-v="${esc(c)}">${em(c)} ${esc(c)}</button>`).join("")}</div>
@@ -319,7 +322,9 @@ function showInstall(){
 }
 const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",theme);
 
+/* FIX: try/catch around the whole click handler — labeled errors and a toast, no silent rejections */
 document.addEventListener("click",async e=>{
+try{
   const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
   else if(a==="plan"){planTab=v;view()}
@@ -355,7 +360,9 @@ document.addEventListener("click",async e=>{
   else if(a==="delgoal"){if(confirm("Delete this goal and its deposits?")){for(const x of S.acts.filter(z=>z.goalId===id)){await deleteRecord("savingsActivities",x.id);if(x.linkedTransactionId)await deleteRecord("transactions",x.linkedTransactionId)}await deleteRecord("savingsGoals",id);await refresh()}}
   else if(a==="csv"){const q=s=>`"${String(s??"").replace(/"/g,'""')}"`,rows=[["Date","Type","Category","Description","Amount"],...[...S.tx].sort(byDate).map(x=>[x.date,x.type,x.category,x.description,x.amount])];
     const u=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="pesowise-transactions.csv";l.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+}catch(err){console.error("PesoWise click error:",err);try{close()}catch(_){ }toast("Something went wrong. Please try again.")}
 });
+
 const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 function enter(){
   if(calm())return;
@@ -382,6 +389,3 @@ window.addEventListener("hashchange",go);
   setTimeout(()=>{sp.classList.add("out");setTimeout(()=>{sp.remove();enter();showInstall()},450)},Math.max(0,1500-performance.now()));
   if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
-</script>
-</body>
-</html>
