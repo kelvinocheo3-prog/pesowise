@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pesowise-shell-v31';
+const CACHE_NAME = 'pesowise-shell-v32';
 const APP_ASSETS = [
   './',
   './index.html',

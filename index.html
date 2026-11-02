@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2f4bff">
+<meta name="theme-color" content="#0a6cba">
 <meta name="description" content="A private, offline-first personal finance tracker.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PesoWise">
@@ -125,6 +125,46 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
 .q{width:24px;height:24px;border-radius:50%;background:#fff;color:#2f4bff;display:grid;place-items:center;font-weight:800;font-size:15px}
 .ring:active{transform:scale(.97)}
 .logo{border-radius:14px;object-fit:cover;flex:none}
+
+/* Clean white style with light-gray cards and a blue accent */
+:root{--bg:#fff;--card:#f1f1f1;--ink:#111;--mute:#585858;--line:#d4d4d4;--ac:#0a6cba;--ac-ink:#fff;--exp:#d93025;--inc:#188038;--warn:#f29900}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#4aa3ff;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}}
+:root[data-theme="dark"]{--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#4aa3ff;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}
+.top{position:sticky;top:0;z-index:6;height:68px;margin:-14px -16px 14px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.top h1{font-size:22px;letter-spacing:-.02em}
+.top small{font-size:12px}
+.top .logo{width:40px;height:40px;border-radius:12px}
+.ib{background:var(--card);border-radius:999px}
+.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.13);border-radius:28px}
+.r0{stroke:var(--line)}.r1{stroke:var(--ac)}
+.ringtxt small{color:var(--mute);opacity:1}
+.stats div{background:var(--card)}
+.chip,.seg,.seg button,.btn{border-radius:999px}
+.chip{background:var(--bg)}
+.chip.on{background:var(--ac);color:var(--ac-ink)}
+.seg{background:var(--card)}
+.seg button.on{background:var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.seg.stick{top:calc(env(safe-area-inset-top,0px) + 76px);background:var(--line)}
+.btn.ghost{background:var(--card)}
+.sheet{background:var(--bg)}
+.in{background:var(--card);border-radius:16px}
+.add{box-shadow:0 8px 20px rgba(10,108,186,.38)}
+/* Splash screen */
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .45s ease}
+#splash.out{opacity:0;pointer-events:none}
+#splash img{width:132px;height:132px;border-radius:32px;box-shadow:0 14px 36px rgba(10,108,186,.35);animation:splashPop .8s cubic-bezier(.34,1.6,.64,1) both}
+#splash b{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:8px;animation:rise .6s .2s cubic-bezier(.34,1.5,.64,1) both}
+#splash span{color:var(--mute);font-size:15px;animation:rise .6s .3s cubic-bezier(.34,1.5,.64,1) both}
+#splash i{width:120px;height:4px;border-radius:4px;background:var(--line);overflow:hidden;position:relative;margin-top:14px}
+#splash i::after{content:"";position:absolute;inset:0;background:var(--ac);transform-origin:left;animation:grow 1.3s ease-out both}
+@keyframes splashPop{from{transform:scale(.5);opacity:0}}
+/* Install notice at the top */
+.ibar{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:536px;margin:0 auto;background:#3a3a3a;color:#fff;border-radius:20px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.3);z-index:50;transform:translateY(-160%);visibility:hidden;transition:transform .5s cubic-bezier(.34,1.4,.64,1),visibility 0s .5s}
+.ibar.show{transform:none;visibility:visible;transition:transform .5s cubic-bezier(.34,1.4,.64,1)}
+.ibar .logo{width:40px;height:40px;border-radius:12px}
+.ibar .grow{font-weight:700;font-size:15px;line-height:1.3;white-space:normal}
+.ibar .ib2{min-height:44px;padding:0 18px;border-radius:999px;background:var(--ac);color:var(--ac-ink);font-weight:700}
+.ibar .x{width:40px;height:44px;font-size:18px;color:#fff}
 </style>
 </head>
 <body>
@@ -152,6 +192,8 @@ nav a{transition:color .2s}nav a .ic{transition:transform .25s cubic-bezier(.2,.
   <path d="M5 12h14" />
   <path d="M12 5v14" />
 </symbol></svg>
+<div id="splash" aria-hidden="true"><img src="icons/icon-192.png" alt="" width="132" height="132"><b>PesoWise</b><span>Your money, in balance</span><i></i></div>
+<div class="ibar" id="ibar" role="status"><img class="logo" src="icons/icon-192.png" alt="" width="40" height="40"><span class="grow">Install our app, no Play Store required!</span><button class="ib2" data-a="install">Install</button><button class="x" data-a="ibarx" aria-label="Dismiss">✕</button></div>
 <div id="app" aria-live="polite"></div>
 <nav id="nav" aria-label="Main navigation"></nav>
 <div class="shade" id="shade"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
@@ -268,6 +310,13 @@ const instBlock=()=>{const box=h=>`<div style="background:var(--bg);border-radiu
   if(matchMedia("(display-mode: standalone)").matches)return box(`<b style="color:var(--inc)">✓ Installed on this phone</b>`);
   if(deferred)return box(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><img class="logo" src="icons/icon-192.png" alt="" width="44" height="44"><span style="color:var(--mute);font-size:14px">Add PesoWise to your home screen. It opens like a real app, even without internet.</span></div><button class="btn" data-a="install" style="margin:0">Install app</button>`);
   return box(`<span style="color:var(--mute);font-size:14px">To install, open this page in <b>Chrome</b>, tap the <b>⋮</b> menu, then tap <b>Install app</b> or <b>Add to Home screen</b>.</span>`)};
+let barT;
+const hideBar=()=>{clearTimeout(barT);$("#ibar").classList.remove("show")};
+function showInstall(){
+  if(!deferred||matchMedia("(display-mode: standalone)").matches||curPage!=="dashboard")return;
+  try{if(sessionStorage.getItem("pw-bar"))return;sessionStorage.setItem("pw-bar","1")}catch(e){}
+  $("#ibar").classList.add("show");clearTimeout(barT);barT=setTimeout(hideBar,8000);
+}
 const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",theme);
 
 document.addEventListener("click",async e=>{
@@ -275,7 +324,8 @@ document.addEventListener("click",async e=>{
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
   else if(a==="plan"){planTab=v;view()}
   else if(a==="ring")ringSheet();
-  else if(a==="install"){if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
+  else if(a==="ibarx")hideBar();
+  else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
   else if(a==="gotoplan"){close();planTab="budgets";location.hash="plan"}
   else if(a==="close")close();
   else if(a==="settings")settings();
@@ -316,18 +366,20 @@ const order=["dashboard","transactions","plan","reports"];
 const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard"};
 function go(){
   close();
-  const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=()=>{view();scrollTo(0,0);enter()};
+  const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=()=>{view();scrollTo(0,0);enter();showInstall()};
   if(from===to){swap();return}
   const dir=to>from?"fwd":"back";
   if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.dir=dir;document.startViewTransition(swap)}
   else{swap();if(!matchMedia("(prefers-reduced-motion: reduce)").matches)$("#app").animate([{opacity:0,transform:`translateX(${dir==="fwd"?28:-28}px)`},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})}
 }
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(!$("#splash"))showInstall()});
 window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed")});
 window.addEventListener("hashchange",go);
 (async()=>{
-  try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view();enter()}
+  try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view()}
   catch(e){$("#app").innerHTML=`<div class="card" style="margin-top:24px">${empty("Can’t open your data","Your browser blocked local storage. Turn off private browsing and reload.")}</div>`}
+  const sp=$("#splash");
+  setTimeout(()=>{sp.classList.add("out");setTimeout(()=>{sp.remove();enter();showInstall()},450)},Math.max(0,1500-performance.now()));
   if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
 </script>
