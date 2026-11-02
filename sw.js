@@ -1,4 +1,5 @@
 const CACHE_NAME = 'pesowise-shell-v35';
+const CACHE_NAME = 'pesowise-shell-v33';
 const APP_ASSETS = [
   './',
   './index.html',
@@ -24,26 +25,19 @@ self.addEventListener('activate', event => {
   )).then(() => self.clients.claim()));
 });
 
-// FIX: cache-first served stale code forever — the + button fixes in
-// index.html never reached installed phones. Stale-while-revalidate keeps
-// the app usable offline while always updating the cache in the background.
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith((async () => {
     const cached = await caches.match(request);
-    const network = fetch(request).then(response => {
-      if (response && response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-      }
-      return response;
-    }).catch(() => null);
     if (cached) return cached;
-    const fresh = await network;
-    if (fresh) return fresh;
-    if (request.mode === 'navigate') return (await caches.match('./index.html')) || (await caches.match('./offline.html'));
-    throw new Error('Offline and not cached.');
+    try {
+      const response = await fetch(request);
+      return response;
+    } catch (error) {
+      if (request.mode === 'navigate') return (await caches.match('./offline.html'));
+      throw error;
+    }
   })());
 });
 
