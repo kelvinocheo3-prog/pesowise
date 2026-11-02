@@ -321,6 +321,8 @@ function showInstall(){
   $("#ibar").classList.add("show");clearTimeout(barT);barT=setTimeout(hideBar,8000);
 }
 const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",theme);
+/* FIX: dismiss the splash no matter what happens during DB startup */
+let splashT;const dismissSplash=()=>{const sp=$("#splash");if(!sp||sp.classList.contains("out"))return;sp.classList.add("out");splashT=setTimeout(()=>{sp.remove();enter();showInstall()},450)};
 
 /* FIX: try/catch around the whole click handler — labeled errors and a toast, no silent rejections */
 document.addEventListener("click",async e=>{
@@ -385,7 +387,14 @@ window.addEventListener("hashchange",go);
 (async()=>{
   try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view()}
   catch(e){$("#app").innerHTML=`<div class="card" style="margin-top:24px">${empty("Can’t open your data","Your browser blocked local storage. Turn off private browsing and reload.")}</div>`}
-  const sp=$("#splash");
-  setTimeout(()=>{sp.classList.add("out");setTimeout(()=>{sp.remove();enter();showInstall()},450)},Math.max(0,1500-performance.now()));
+  finally{setTimeout(dismissSplash,Math.max(0,1500-performance.now()))}
   if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
+</script>
+<script>
+/* FIX: failsafe — if the app module never loads or DB init hangs, remove the
+   splash after 8 seconds so the UI can never stay stuck on the splash screen. */
+setTimeout(function(){var s=document.getElementById("splash");if(s)s.remove()},8000);
+</script>
+</body>
+</html>
