@@ -18,6 +18,7 @@
   .toast-region{bottom:calc(150px + env(safe-area-inset-bottom))}
   .add-choice{display:grid;gap:10px}
   .add-choice .button{width:100%;justify-content:flex-start;gap:12px;min-height:56px;font-size:16px}
-  /* 6. Amount input in Add form: proportionate, still prominent */
-  input.in.amount{font-size:26px;font-weight:700;min-height:56px;letter-spacing:-.01em}
+  /* Amount input: index.html sets its size via INLINE style, so !important is
+     required for this rule to win. 26px = prominent but proportionate. */
+  input.in.amount{font-size:26px!important;font-weight:700!important;min-height:56px!important;height:56px!important;line-height:56px!important}
 }
