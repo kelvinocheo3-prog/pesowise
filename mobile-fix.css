@@ -1,30 +1,23 @@
 /* PesoWise mobile fix: loaded AFTER style.css. Only affects phones (760px and below). */
 .fab{display:none}
 @media (max-width:760px){
-  /* 1. Remove the crowded row of tiny buttons under the title */
   .topbar-page-actions{display:none!important}
-
-  /* 2. Readable, thumb-sized buttons everywhere */
   .button{min-height:48px;padding:0 18px;border-radius:14px;font-size:15px;font-weight:700}
   .report-controls .button{font-size:14px}
   input,select,textarea{min-height:48px;font-size:16px}
-
-  /* 3. Bottom navigation: bigger labels and tap areas */
   .mobile-nav{height:calc(68px + env(safe-area-inset-bottom))}
   .mobile-nav a{min-height:52px}
   .mobile-nav a small{font-size:12px;font-weight:700}
   .mobile-nav .icon{width:24px;height:24px}
   .main-area{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
-
-  /* 4. One floating action button, within thumb reach */
   .fab{display:grid;place-items:center;position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));
     width:60px;height:60px;border:0;border-radius:50%;background:var(--green-2);color:#fff;z-index:11;
     box-shadow:0 10px 24px rgba(104,73,202,.4)}
   .fab .icon{width:28px;height:28px}
   .fab:active{transform:scale(.95)}
   .toast-region{bottom:calc(150px + env(safe-area-inset-bottom))}
-
-  /* 5. Big choice buttons inside the Add sheet */
   .add-choice{display:grid;gap:10px}
   .add-choice .button{width:100%;justify-content:flex-start;gap:12px;min-height:56px;font-size:16px}
+  /* 6. Amount input in Add form: proportionate, still prominent */
+  input.in.amount{font-size:26px;font-weight:700;min-height:56px;letter-spacing:-.01em}
 }
