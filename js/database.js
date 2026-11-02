@@ -78,12 +78,29 @@ export async function initializeDatabase() {
   const tx = db.transaction(['categories', 'settings'], 'readwrite');
   const categories = tx.objectStore('categories');
   const settings = tx.objectStore('settings');
-  const existing = await requestResult(categories.count());
-  if (!existing) DEFAULT_CATEGORIES.forEach(category => categories.put(category));
-  if (!await requestResult(settings.get('savingsLinked'))) settings.put({ key: 'savingsLinked', value: false });
-  if (!await requestResult(settings.get('currency'))) settings.put({ key: 'currency', value: 'PHP' });
-  if (!await requestResult(settings.get('budgetAlertThreshold'))) settings.put({ key: 'budgetAlertThreshold', value: 80 });
-  if (!await requestResult(settings.get('weekStartsOn'))) settings.put({ key: 'weekStartsOn', value: 1 });
+
+  // FIX: no awaits inside the live transaction — browsers (Safari, Firefox,
+  // Android WebView) can auto-commit it during an await, which made the
+  // category seeding below throw TransactionInactiveError and silently skip
+  // seeding. All reads/writes are now chained via request callbacks inside
+  // the same transaction.
+  const countRequest = categories.count();
+  countRequest.onsuccess = () => {
+    if (!countRequest.result) DEFAULT_CATEGORIES.forEach(category => categories.put(category));
+  };
+
+  for (const [key, value] of Object.entries({
+    savingsLinked: false,
+    currency: 'PHP',
+    budgetAlertThreshold: 80,
+    weekStartsOn: 1
+  })) {
+    const getRequest = settings.get(key);
+    getRequest.onsuccess = () => {
+      if (!getRequest.result) settings.put({ key, value });
+    };
+  }
+
   await transactionComplete(tx);
   await recordAutomaticSnapshot(db);
   return db;
