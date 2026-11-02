@@ -19,5 +19,5 @@
   .add-choice{display:grid;gap:10px}
   .add-choice .button{width:100%;justify-content:flex-start;gap:12px;min-height:56px;font-size:16px}
   /* 6. Amount input in Add form: proportionate, still prominent */
-  input.in.amount{font-size:26px;font-weight:700;min-height:56px;letter-spacing:-.01em}
+  input.in.amount{font-size:16px;font-weight:400;min-height:56px;letter-spacing:normal}
 }
