@@ -319,6 +319,17 @@ html[data-dir="back"]::view-transition-new(page){animation:.43s cubic-bezier(.22
 .hero.orb .ringtxt small{font-size:12px;font-weight:600;line-height:1.25;color:#a8d9ff;opacity:1}
 .hero.orb .ringtxt b{font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 1px 12px rgba(0,150,255,.3)}
 @media(prefers-reduced-motion:reduce){.hero.orb .sw{animation:none!important;opacity:0}.live{animation:none!important}}
+
+/* Switch buttons: the white pill slides between the two choices */
+.seg{position:relative}
+.seg .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/2);border-radius:999px;background:var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.18);transition:transform .38s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.seg button{position:relative;z-index:1;background:none!important;box-shadow:none!important;transition:color .25s}
+.seg button.on{color:var(--ink);font-weight:800}
+.swapin{animation:float2 .32s cubic-bezier(.22,1,.36,1) both}
+/* Popup in the middle of the screen */
+.shade{display:grid;place-items:center;padding:16px}
+.sheet{position:relative;left:auto;right:auto;bottom:auto;width:min(100%,420px);max-width:420px;margin:0;border-radius:24px;padding:20px 18px 18px;max-height:min(88vh,640px);max-height:min(88dvh,640px);background:var(--bg);box-shadow:0 24px 60px rgba(0,0,0,.3);transform:translateY(18px) scale(.94);opacity:0;transition:transform .34s cubic-bezier(.22,1,.36,1),opacity .24s ease}
+.shade.show .sheet{transform:none;opacity:1}
 </style>
 </head>
 <body>
@@ -417,8 +428,21 @@ function vAct(){
   return top("Activity")+`<div class="chips">${[["all","All"],["expense","Expenses"],["income","Income"]].map(c=>`<button class="chip ${filter===c[0]?"on":""}" data-a="filter" data-v="${c[0]}">${c[1]}</button>`).join("")}</div>`+
   (list.length?Object.keys(g).map(d=>`<h2>${lab(d)}</h2><div class="card">${g[d].map(txRow).join("")}</div>`).join(""):`<div class="card">${empty("No transactions","Tap + to record money coming in or going out.")}</div>`);
 }
+function swapPlan(v){
+  if(v===planTab)return;
+  planTab=v;
+  const app=$("#app"),seg=app.querySelector(".seg.stick");
+  if(!seg){view();return}
+  seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  seg.querySelector(".knob").style.transform=`translateX(${v==="goals"?100:0}%)`;
+  const tmp=document.createElement("div");tmp.innerHTML=vPlan();
+  app.querySelector(".top").replaceWith(tmp.querySelector(".top"));
+  [...app.children].forEach(c=>{if(c!==seg&&!c.classList.contains("top"))c.remove()});
+  [...tmp.children].filter(c=>!c.classList.contains("top")&&!c.classList.contains("seg")).forEach(c=>{c.classList.add("swapin");app.append(c)});
+  $("#nav .add")?.setAttribute("aria-label",v==="goals"?"New savings goal":"Add transaction");
+}
 function vPlan(){
-  const m=mk(),seg=`<div class="seg stick"><button data-a="plan" data-v="budgets" class="${planTab==="budgets"?"on":""}">Budgets</button><button data-a="plan" data-v="goals" class="${planTab==="goals"?"on":""}">Savings goals</button></div>`;
+  const m=mk(),seg=`<div class="seg stick"><i class="knob" style="transform:translateX(${planTab==="goals"?100:0}%)"></i><button data-a="plan" data-v="budgets" class="${planTab==="budgets"?"on":""}">Budgets</button><button data-a="plan" data-v="goals" class="${planTab==="goals"?"on":""}">Savings goals</button></div>`;
   if(planTab==="goals")return top("Plan","Save for what matters")+seg+`<button class="link" data-a="goal">+ New goal</button>`+(S.goals.length?S.goals.map(g=>{const cur=savingsBalance(g.id,S.acts),p=Math.max(0,Math.min(100,Math.round(cur/g.targetAmount*100)));
     return `<div class="card" style="margin-bottom:12px;padding:16px"><b style="font-size:15px">${esc(g.name)}</b><div style="color:var(--mute);font-size:14px">${peso(cur)} saved of ${peso(g.targetAmount)}${p>=100?" · Goal reached 🎉":""}</div><div class="bar"><i style="width:${p}%"></i></div><div style="display:flex;justify-content:space-between;margin-top:8px"><button class="link" data-a="activity" data-id="${esc(g.id)}">Deposit or withdraw</button><button class="link" data-a="delgoal" data-id="${esc(g.id)}" style="color:var(--exp)">Delete</button></div></div>`}).join(""):`<div class="card">${empty("No goals yet","Pick something to save for, like a phone or school fees.")}</div>`);
   const mb=S.budgets.filter(b=>b.month===m),tot=plannedBudgetTotal(mb),sp=sumAmounts(S.tx.filter(t=>t.type==="expense"&&inMonth(t,m)));
@@ -456,7 +480,7 @@ let d={};
 const chipsHtml=L=>L.map(c=>`<button class="chip ${d.cat===c?"on":""}" data-a="cat" data-v="${esc(c)}">${em(c)} ${esc(c)}</button>`).join("");
 function txSheet(){
   const L=catsOf(d.type);if(!L.includes(d.cat))d.cat=L[0];
-  sheet(`<h3>${d.id?"Edit transaction":"Add transaction"}</h3><div class="seg"><button data-a="type" data-v="expense" class="${d.type==="expense"?"on":""}">Expense</button><button data-a="type" data-v="income" class="${d.type==="income"?"on":""}">Income</button></div>
+  sheet(`<h3>${d.id?"Edit transaction":"Add transaction"}</h3><div class="seg"><i class="knob" style="transform:translateX(${d.type==="income"?100:0}%)"></i><button data-a="type" data-v="expense" class="${d.type==="expense"?"on":""}">Expense</button><button data-a="type" data-v="income" class="${d.type==="income"?"on":""}">Income</button></div>
   <label for="a">Amount</label><input class="in amount" id="a" inputmode="decimal" placeholder="₱0.00" value="${esc(d.amt||"")}">
   <label>Category</label><div class="chips scroll" id="cats">${chipsHtml(L)}</div>
   <label for="n">Description (optional)</label><input class="in" id="n" placeholder="What was it for?" value="${esc(d.desc||"")}">
@@ -489,7 +513,7 @@ const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("da
 document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
-  else if(a==="plan"){planTab=v;view()}
+  else if(a==="plan")swapPlan(v)
   else if(a==="ring")ringSheet();
   else if(a==="ibarx")hideBar();
   else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
@@ -498,7 +522,7 @@ document.addEventListener("click",async e=>{
   else if(a==="settings")settings();
   else if(a==="theme"){theme=v;applyTheme();await setSetting("themeMode",v);settings()}
   else if(a==="filter"){filter=v;view()}
-  else if(a==="type"){d.type=v;d.cat=catsOf(v)[0];document.querySelectorAll('#sheet [data-a="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===v));$("#cats").innerHTML=chipsHtml(catsOf(v));$("#cats").scrollLeft=0}
+  else if(a==="type"){d.type=v;d.cat=catsOf(v)[0];document.querySelectorAll('#sheet [data-a="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===v));$("#sheet .seg .knob").style.transform=`translateX(${v==="income"?100:0}%)`;$("#cats").innerHTML=chipsHtml(catsOf(v));$("#cats").scrollLeft=0}
   else if(a==="cat"){d.cat=v;document.querySelectorAll("#cats .chip").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
   else if(a==="save"){keep();const amt=validAmount(String(d.amt).replace(/,/g,""));if(!amt)return err("Enter an amount above zero, with up to 2 decimals.");
     const old=S.tx.find(x=>x.id===d.id),now=new Date().toISOString();
@@ -523,8 +547,8 @@ document.addEventListener("click",async e=>{
   else if(a==="activity"){const g=S.goals.find(x=>x.id===id);let kind="deposit";
     amountSheet(g.name,"Amount",0,async n=>{if(kind==="withdrawal"&&n>savingsBalance(g.id,S.acts)){err("You can’t withdraw more than you saved.");return false}
       await putRecord("savingsActivities",{id:uid(),goalId:g.id,type:kind,amount:n,date:today(),note:"",createdAt:new Date().toISOString(),linkedTransactionId:null})},
-      `<div class="seg"><button id="k1" class="on">Deposit</button><button id="k2">Withdraw</button></div>`);
-    $("#k1").onclick=()=>{kind="deposit";$("#k1").className="on";$("#k2").className=""};$("#k2").onclick=()=>{kind="withdrawal";$("#k2").className="on";$("#k1").className=""}}
+      `<div class="seg"><i class="knob"></i><button id="k1" class="on">Deposit</button><button id="k2">Withdraw</button></div>`);
+    $("#k1").onclick=()=>{kind="deposit";$("#k1").className="on";$("#k2").className="";$("#sheet .knob").style.transform="translateX(0)"};$("#k2").onclick=()=>{kind="withdrawal";$("#k2").className="on";$("#k1").className="";$("#sheet .knob").style.transform="translateX(100%)"}}
   else if(a==="delgoal"){if(confirm("Delete this goal and its deposits?")){for(const x of S.acts.filter(z=>z.goalId===id)){await deleteRecord("savingsActivities",x.id);if(x.linkedTransactionId)await deleteRecord("transactions",x.linkedTransactionId)}await deleteRecord("savingsGoals",id);await refresh()}}
   else if(a==="csv"){const q=s=>`"${String(s??"").replace(/"/g,'""')}"`,rows=[["Date","Type","Category","Description","Amount"],...[...S.tx].sort(byDate).map(x=>[x.date,x.type,x.category,x.description,x.amount])];
     const u=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="budgetwise-transactions.csv";l.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
