@@ -29,19 +29,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 
-/* Hero Card & Exact Neon Fluid Ring Style */
-.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,242,254,0.18);border-radius:24px;padding:16px;text-align:center;margin-bottom:12px}
-.ring{position:relative;width:200px;height:200px;margin:0 auto;display:block}
+/* Hero Card & Reference Loader Ring Style */
+.hero{background:radial-gradient(circle at center, #0d1626 0%, #070b12 100%);color:#f2f2f2;border:1px solid rgba(0,242,254,0.25);box-shadow:0 16px 40px rgba(0,198,255,0.15), inset 0 0 20px rgba(0,242,254,0.05);border-radius:24px;padding:20px;text-align:center;margin-bottom:12px}
+.ring{position:relative;width:210px;height:210px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-linecap:round}
-.r0{stroke:var(--line);stroke-width:8;opacity:0.25}
-.r1{stroke:url(#neonFluidMain);stroke-width:12;transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1);filter:url(#neonGlow)}
-.r2{stroke:url(#neonFluidSub);stroke-width:6;opacity:0.85;transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1)}
+.r0{stroke:rgba(0,242,254,0.2);stroke-width:3}
+.r1{stroke:url(#neonCyanGlow);stroke-width:3.5;filter:url(#intenseGlow);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1)}
+.r-swoosh1{stroke:url(#swooshGrad1);stroke-width:10;filter:url(#intenseGlow);opacity:0.95;stroke-dasharray:65 300}
+.r-swoosh2{stroke:url(#swooshGrad2);stroke-width:6;filter:url(#intenseGlow);opacity:0.85;stroke-dasharray:45 320}
 .ring-progress-wrapper{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.22,1,.36,1);transform:rotate(0deg);pointer-events:none}
-.ring-head{position:absolute;top:3px;left:50%;width:18px;height:18px;background:radial-gradient(circle,#fff 20%,#00f2fe 60%,#00c6ff 100%);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 16px #00f2fe, 0 0 28px #4facfe, 0 0 40px rgba(0,242,254,0.9)}
-.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:0 20px}
-.ringtxt small{font-size:11px;font-weight:600;color:var(--mute)}
-.ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 24px}
+.ringtxt small{font-size:11px;font-weight:600;color:#8ab4f8}
+.ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em;color:#fff}
 
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
@@ -124,16 +124,21 @@ nav>*{pointer-events:auto}
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="neonFluidMain" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00f2fe"/>
       <stop offset="100%" stop-color="#4facfe"/>
     </linearGradient>
-    <linearGradient id="neonFluidSub" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#00c6ff"/>
+    <linearGradient id="swooshGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="50%" stop-color="#00c6ff"/>
       <stop offset="100%" stop-color="#0072ff"/>
     </linearGradient>
-    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+    <linearGradient id="swooshGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+    <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -235,13 +240,10 @@ function vDash(){
   setTimeout(()=>{
     const dotWrap = $("#ringProgress");
     const ringCircle = $("#ringCircle");
-    const ringCircleSub = $("#ringCircleSub");
     const countEl = $("#ringCount");
     if(dotWrap && ringCircle && countEl){
       dotWrap.style.transform = `rotate(${targetDeg}deg)`;
-      const dashVal = `${(C*frac).toFixed(1)} ${C}`;
-      ringCircle.style.strokeDasharray = dashVal;
-      if(ringCircleSub) ringCircleSub.style.strokeDasharray = dashVal;
+      ringCircle.style.strokeDasharray = `${(C*frac).toFixed(1)} ${C}`;
       
       const t0 = performance.now();
       const animCount = (t) => {
@@ -258,10 +260,11 @@ function vDash(){
   `<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out">
     <svg viewBox="0 0 120 120" aria-hidden="true">
       <circle class="r0" cx="60" cy="60" r="52"/>
-      <circle id="ringCircleSub" class="r2" cx="60" cy="60" r="52" style="stroke-dasharray:0 326.7"/>
+      <circle class="r-swoosh1" cx="60" cy="60" r="52"/>
+      <circle class="r-swoosh2" cx="60" cy="60" r="52"/>
       <circle id="ringCircle" class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:0 326.7"/>
     </svg>
-    <div id="ringProgress" class="ring-progress-wrapper" style="transform: rotate(0deg)"><div class="ring-head"></div></div>
+    <div id="ringProgress" class="ring-progress-wrapper" style="transform: rotate(0deg)"></div>
     <span class="ringtxt">
       <small>${left>=0?"You can still spend today":"Over today’s limit by"}</small>
       <b id="ringCount">${peso(0)}</b>
