@@ -106,28 +106,31 @@ export async function initializeDatabase() {
   return db;
 }
 
-async function recordAutomaticSnapshot(db) {
+let snapshotTimer = null;
+// Coalesce bursts of writes into one snapshot a few seconds later (a full copy per write is wasteful).
+function scheduleSnapshot(db) {
+  if (snapshotTimer) return;
+  snapshotTimer = setTimeout(() => { snapshotTimer = null; recordAutomaticSnapshot(db); }, 3000);
+}
+
+// Request callbacks only (no awaits inside a live transaction), as in initializeDatabase.
+async function recordAutomaticSnapshot(db, label) {
   try {
+    const records = {};
     const readTx = db.transaction(STORE_NAMES, 'readonly');
-    const readDone = transactionComplete(readTx);
-    const records = await Promise.all(STORE_NAMES.map(async name => [name, await requestResult(readTx.objectStore(name).getAll())]));
-    await readDone;
+    STORE_NAMES.forEach(name => { readTx.objectStore(name).getAll().onsuccess = e => { records[name] = e.target.result; }; });
+    await transactionComplete(readTx);
 
     const createdAt = Date.now();
+    const localDay = new Date(createdAt - new Date(createdAt).getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     const backupTx = db.transaction(BACKUP_STORE_NAME, 'readwrite');
-    const backupDone = transactionComplete(backupTx);
     const backups = backupTx.objectStore(BACKUP_STORE_NAME);
-    const snapshot = {
-      id: new Date(createdAt).toISOString().slice(0, 10),
-      createdAt,
-      schemaVersion: BACKUP_SCHEMA_VERSION,
-      data: Object.fromEntries(records)
+    backups.put({ id: label || localDay, createdAt, schemaVersion: BACKUP_SCHEMA_VERSION, data: records });
+    backups.getAll().onsuccess = e => {
+      e.target.result.sort((a, b) => b.createdAt - a.createdAt)
+        .slice(BACKUP_RETENTION_DAYS).forEach(backup => backups.delete(backup.id));
     };
-    const writeRequest = requestResult(backups.put(snapshot));
-    const allBackups = await requestResult(backups.getAll());
-    allBackups.sort((a, b) => b.createdAt - a.createdAt);
-    const deleteRequests = allBackups.slice(BACKUP_RETENTION_DAYS).map(backup => requestResult(backups.delete(backup.id)));
-    await Promise.all([writeRequest, backupDone, ...deleteRequests]);
+    await transactionComplete(backupTx);
   } catch (error) {
     console.warn('Automatic local backup could not be updated.', error);
   }
@@ -148,7 +151,7 @@ export async function putRecord(storeName, record) {
   const tx = db.transaction(storeName, 'readwrite');
   const done = transactionComplete(tx);
   await Promise.all([requestResult(tx.objectStore(storeName).put(record)), done]);
-  await recordAutomaticSnapshot(db);
+  scheduleSnapshot(db);
   return record;
 }
 
@@ -157,7 +160,7 @@ export async function deleteRecord(storeName, id) {
   const tx = db.transaction(storeName, 'readwrite');
   const done = transactionComplete(tx);
   await Promise.all([requestResult(tx.objectStore(storeName).delete(id)), done]);
-  await recordAutomaticSnapshot(db);
+  scheduleSnapshot(db);
 }
 
 export async function getSetting(key, fallback = null) {
@@ -180,13 +183,24 @@ export async function exportAllData() {
 }
 
 export async function replaceAllData(data) {
+  // Validate BEFORE touching the database: a malformed file must never clear anything.
+  if (!data || typeof data !== 'object' || !STORE_NAMES.every(name => Array.isArray(data[name]))) {
+    throw new Error('This file is not a valid backup.');
+  }
   const db = await openDatabase();
+  await recordAutomaticSnapshot(db, 'pre-restore');
   const tx = db.transaction(STORE_NAMES, 'readwrite');
   const done = transactionComplete(tx);
-  for (const name of STORE_NAMES) {
-    const store = tx.objectStore(name);
-    store.clear();
-    for (const record of data[name]) store.put(record);
+  try {
+    for (const name of STORE_NAMES) {
+      const store = tx.objectStore(name);
+      store.clear();
+      for (const record of data[name]) store.put(record);
+    }
+  } catch (error) {
+    tx.abort();
+    await done.catch(() => {});
+    throw error;
   }
   await done;
   await recordAutomaticSnapshot(db);
