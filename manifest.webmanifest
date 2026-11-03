@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "PesoWise",
-  "short_name": "PesoWise",
-  "description": "Private, offline-first personal finance tracking.",
+  "name": "Budget Wise",
+  "short_name": "Budget Wise",
+  "description": "Budget Wise: Track & Save. A private, offline-first budget tracker.",
   "lang": "en-PH",
   "start_url": "/",
   "scope": "/",

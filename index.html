@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0a6cba">
-<meta name="description" content="A private, offline-first personal finance tracker.">
+<meta name="description" content="Budget Wise: Track &amp; Save. A private, offline-first budget tracker.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="PesoWise">
-<title>PesoWise | Your money, in balance</title>
+<meta name="apple-mobile-web-app-title" content="Budget Wise">
+<title>Budget Wise | Track &amp; Save</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -263,6 +263,35 @@ html.reveal::view-transition-new(page){animation:.6s cubic-bezier(.22,1,.36,1) b
 /* normal-size amount field */
 .in.amount{font-size:16px;font-weight:600;min-height:48px;letter-spacing:0}
 .in.amount::placeholder{font-weight:500}
+
+/* Pill navigation (like the Notes / Tasks switch) */
+:root{--seg:#dde1e4}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--seg:#3a3a3a}}
+:root[data-theme="dark"]{--seg:#3a3a3a}
+nav{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0 14px calc(12px + env(safe-area-inset-bottom,0px));pointer-events:none}
+nav>*{pointer-events:auto}
+.pill{position:relative;flex:1;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 8px 22px rgba(0,0,0,.14),inset 0 1px 1px rgba(255,255,255,.7)}
+.pill a{position:relative;z-index:1;min-height:54px;border-radius:999px;color:var(--mute);font-size:11px;font-weight:600;gap:2px}
+.pill a.on{color:var(--ink);font-weight:800}
+.pill a .ic{width:22px;height:22px;transform:none!important;animation:none!important}
+.ind{top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/4);height:auto;border-radius:999px;background:var(--seg);transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.add{margin:0;width:56px;height:56px;border:0;flex:none}
+/* Slide between pages */
+@keyframes slOutL{to{transform:translateX(-28%);opacity:.55}}
+@keyframes slOutR{to{transform:translateX(28%);opacity:.55}}
+@keyframes slInR{from{transform:translateX(100%)}}
+@keyframes slInL{from{transform:translateX(-100%)}}
+html[data-dir="fwd"]::view-transition-old(page){animation:.43s cubic-bezier(.22,1,.36,1) both slOutL}
+html[data-dir="fwd"]::view-transition-new(page){animation:.43s cubic-bezier(.22,1,.36,1) both slInR}
+html[data-dir="back"]::view-transition-old(page){animation:.43s cubic-bezier(.22,1,.36,1) both slOutR}
+html[data-dir="back"]::view-transition-new(page){animation:.43s cubic-bezier(.22,1,.36,1) both slInL}
+@keyframes float2{from{opacity:0;transform:translateY(8px)}}
+#app.enter>*{animation:float2 .35s cubic-bezier(.22,1,.36,1) both}
+#app.enter>*:nth-child(1){animation-delay:0s}#app.enter>*:nth-child(2){animation-delay:.04s}#app.enter>*:nth-child(3){animation-delay:.08s}#app.enter>*:nth-child(4){animation-delay:.12s}#app.enter>*:nth-child(5){animation-delay:.16s}#app.enter>*:nth-child(n+6){animation-delay:.2s}
+/* Live indicator */
+.lv{display:flex;align-items:center;gap:8px}
+.live{width:9px;height:9px;border-radius:50%;background:var(--inc);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(24,128,56,.45)}70%,100%{box-shadow:0 0 0 8px rgba(24,128,56,0)}}
 </style>
 </head>
 <body>
@@ -290,8 +319,8 @@ html.reveal::view-transition-new(page){animation:.6s cubic-bezier(.22,1,.36,1) b
   <path d="M5 12h14" />
   <path d="M12 5v14" />
 </symbol></svg>
-<div id="splash" aria-hidden="true"><div id="splogo" role="img" aria-label="PesoWise logo"></div><b>PesoWise</b><span>Your money, in balance</span><i></i></div>
-<div class="ibar" id="ibar" role="status"><span class="logo logoimg" role="img" aria-label="PesoWise"></span><span class="grow">Install our app, no Play Store required!</span><button class="ib2" data-a="install">Install</button><button class="x" data-a="ibarx" aria-label="Dismiss">✕</button></div>
+<div id="splash" aria-hidden="true"><div id="splogo" role="img" aria-label="Budget Wise logo"></div><b>Budget Wise</b><span>Track &amp; Save</span><i></i></div>
+<div class="ibar" id="ibar" role="status"><span class="logo logoimg" role="img" aria-label="Budget Wise"></span><span class="grow">Install our app, no Play Store required!</span><button class="ib2" data-a="install">Install</button><button class="x" data-a="ibarx" aria-label="Dismiss">✕</button></div>
 <div id="app" aria-live="polite"></div>
 <nav id="nav" aria-label="Main navigation"></nav>
 <div class="shade" id="shade"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
@@ -313,21 +342,20 @@ async function load(){const [tx,budgets,goals,acts,cats]=await Promise.all(["tra
 const catsOf=k=>S.cats.filter(c=>c.kind===k).map(c=>c.name);
 const inMonth=(t,m)=>t.date?.slice(0,7)===m;
 const byDate=(a,b)=>b.date.localeCompare(a.date)||(b.createdAt||"").localeCompare(a.createdAt||"");
-const toast=m=>{navigator.vibrate?.(12);const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2400)};
+const toast=(m,ms=2400)=>{navigator.vibrate?.(12);const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),ms)};
 const empty=(a,b)=>`<div class="empty"><b>${a}</b>${b}</div>`;
-const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-items:center;gap:12px">${logo?`<span class="logo logoimg" role="img" aria-label="PesoWise"></span>`:""}<div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
+const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-items:center;gap:12px">${logo?`<span class="logo logoimg" role="img" aria-label="Budget Wise"></span>`:""}<div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
 const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
-const placeInd=()=>{const nv=$("#nav"),on=nv.querySelector("a.on"),i=nv.querySelector(".ind");if(on&&i)i.style.transform=`translateX(${on.offsetLeft+on.offsetWidth/2-15}px)`};
-addEventListener("resize",placeInd);
+const placeInd=()=>{const i=$("#nav .ind");if(i)i.style.transform=`translateX(${Math.max(0,TABS.findIndex(t=>t[0]===curPage))*100}%)`};
 function view(){
   let r=(location.hash||"#dashboard").slice(1);
   if(r==="budgets"||r==="savings"){planTab=r==="savings"?"goals":"budgets";r="plan"}
   const page=TABS.some(t=>t[0]===r)?r:"dashboard";curPage=page;
   $("#app").innerHTML={dashboard:vDash,transactions:vAct,plan:vPlan,reports:vRep}[page]();
   const nv=$("#nav"),link=t=>`<a href="#${t[0]}">${ic(t[2])}${t[1]}</a>`;
-  if(!nv.children.length)nv.innerHTML='<i class="ind"></i>'+TABS.slice(0,2).map(link).join("")+`<button class="add" data-a="add">${ic("plus")}</button>`+TABS.slice(2).map(link).join("");
+  if(!nv.children.length)nv.innerHTML=`<div class="pill"><i class="ind"></i>${TABS.map(link).join("")}</div><button class="add" data-a="add">${ic("plus")}</button>`;
   nv.querySelectorAll("a").forEach(a=>{const on=a.getAttribute("href")==="#"+page;a.classList.toggle("on",on);if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   placeInd();
   nv.querySelector(".add").setAttribute("aria-label",page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction");
@@ -340,8 +368,10 @@ function vDash(){
   const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
   RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
-  return top("Home",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-count="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button></section>
+  const dom=now.getDate(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),proj=exp>0?exp/dom*dim:0;
+  return top("Budget Wise",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-count="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button></section>
   <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
+  ${exp>0?`<div class="card" style="padding:14px 16px;margin-top:12px"><div class="lv"><span class="live"></span><b>Live forecast</b></div><div style="color:var(--mute);margin-top:4px">At this pace you’ll spend about <b style="color:var(--ink)">${peso(proj)}</b> by the end of the month.${hasB?` That is ${peso(Math.abs(proj-tot))} <b style="color:${proj>tot?"var(--exp)":"var(--inc)"}">${proj>tot?"over":"under"}</b> your ${peso(tot)} budget.`:""}</div></div>`:""}
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
 }
 function ringSheet(){
@@ -383,7 +413,14 @@ function vRep(){
 
 const sheet=h=>{$("#sheet").innerHTML=h;$("#shade").classList.add("show")};
 const close=()=>{document.activeElement?.blur?.();$("#shade").classList.remove("show")};
-const refresh=async()=>{await load();view()};
+const bc="BroadcastChannel" in self?new BroadcastChannel("budgetwise"):null;
+const sheetOpen=()=>$("#shade").classList.contains("show");
+const live=async()=>{await load();if(!sheetOpen())view()};
+if(bc)bc.onmessage=live;
+const refresh=async()=>{await load();view();bc?.postMessage(1)};
+let lastDay=today();
+setInterval(()=>{if(today()!==lastDay){lastDay=today();if(!sheetOpen())view()}},30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){lastDay=today();live()}});
 document.addEventListener("mousedown",e=>{if(e.target.closest("#sheet .chip, #sheet .seg button"))e.preventDefault()});
 $("#shade").addEventListener("click",e=>{if(e.target.id==="shade")close()});
 const err=m=>{$("#er").textContent=m};
@@ -411,7 +448,7 @@ function settings(){
 }
 const instBlock=()=>{const box=h=>`<div style="background:var(--bg);border-radius:18px;padding:14px;margin-bottom:16px">${h}</div>`;
   if(matchMedia("(display-mode: standalone)").matches)return box(`<b style="color:var(--inc)">✓ Installed on this phone</b>`);
-  if(deferred)return box(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><span class="logo logoimg" role="img" aria-label="PesoWise"></span><span style="color:var(--mute);font-size:14px">Add PesoWise to your home screen. It opens like a real app, even without internet.</span></div><button class="btn" data-a="install" style="margin:0">Install app</button>`);
+  if(deferred)return box(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><span class="logo logoimg" role="img" aria-label="Budget Wise"></span><span style="color:var(--mute);font-size:14px">Add Budget Wise to your home screen. It opens like a real app, even without internet.</span></div><button class="btn" data-a="install" style="margin:0">Install app</button>`);
   return box(`<span style="color:var(--mute);font-size:14px">To install, open this page in <b>Chrome</b>, tap the <b>⋮</b> menu, then tap <b>Install app</b> or <b>Add to Home screen</b>.</span>`)};
 let barT;
 const hideBar=()=>{clearTimeout(barT);$("#ibar").classList.remove("show")};
@@ -438,8 +475,14 @@ document.addEventListener("click",async e=>{
   else if(a==="cat"){d.cat=v;document.querySelectorAll("#cats .chip").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
   else if(a==="save"){keep();const amt=validAmount(String(d.amt).replace(/,/g,""));if(!amt)return err("Enter an amount above zero, with up to 2 decimals.");
     const old=S.tx.find(x=>x.id===d.id),now=new Date().toISOString();
+    const pctOf=()=>{const b=S.budgets.find(x=>x.month===mk()&&x.category===d.cat);return b?{b,p:budgetActual(S.tx,b)/b.amount*100}:null};
+    const before=d.type==="expense"?pctOf():null;
     await putRecord("transactions",{...old,id:old?.id||uid(),description:(d.desc||"").trim()||d.cat,amount:amt,category:d.cat,type:d.type,date:d.date||today(),notes:old?.notes||"",createdAt:old?.createdAt||now,updatedAt:now});
-    close();await refresh();toast("Saved")}
+    close();await refresh();
+    const after=d.type==="expense"?pctOf():null;
+    if(after&&after.p>=100&&(!before||before.p<100)){toast(`⚠️ ${d.cat} is over budget by ${peso(budgetActual(S.tx,after.b)-after.b.amount)}`,4500);navigator.vibrate?.([40,60,40])}
+    else if(after&&after.p>=80&&(!before||before.p<80))toast(`${d.cat} is at ${Math.round(after.p)}% of its budget`,4000);
+    else toast("Saved")}
   else if(a==="tx"){const x=S.tx.find(y=>y.id===id);if(!x)return;
     sheet(`<h3>${em(x.category)} ${esc(x.description||x.category)}</h3><p>${x.type==="expense"?"Expense":"Income"} of <b>${peso(x.amount)}</b> in ${esc(x.category)} on ${x.date}.</p><button class="btn" data-a="edit" data-id="${esc(x.id)}">Edit</button><button class="btn ghost" data-a="close">Close</button><button class="btn del" data-a="deltx" data-id="${esc(x.id)}">Delete this transaction</button>`)}
   else if(a==="edit"){const x=S.tx.find(y=>y.id===id);d={id:x.id,type:x.type,cat:x.category,amt:x.amount,desc:x.description,date:x.date};txSheet()}
@@ -457,7 +500,7 @@ document.addEventListener("click",async e=>{
     $("#k1").onclick=()=>{kind="deposit";$("#k1").className="on";$("#k2").className=""};$("#k2").onclick=()=>{kind="withdrawal";$("#k2").className="on";$("#k1").className=""}}
   else if(a==="delgoal"){if(confirm("Delete this goal and its deposits?")){for(const x of S.acts.filter(z=>z.goalId===id)){await deleteRecord("savingsActivities",x.id);if(x.linkedTransactionId)await deleteRecord("transactions",x.linkedTransactionId)}await deleteRecord("savingsGoals",id);await refresh()}}
   else if(a==="csv"){const q=s=>`"${String(s??"").replace(/"/g,'""')}"`,rows=[["Date","Type","Category","Description","Amount"],...[...S.tx].sort(byDate).map(x=>[x.date,x.type,x.category,x.description,x.amount])];
-    const u=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="pesowise-transactions.csv";l.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+    const u=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="budgetwise-transactions.csv";l.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 });
 const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 function enter(){
@@ -467,19 +510,17 @@ function enter(){
 }
 const order=["dashboard","transactions","plan","reports"];
 const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard"};
-let vt,tap=null;
-document.addEventListener("pointerdown",e=>{const a=e.target.closest?.("nav a");tap=a?{x:e.clientX,y:e.clientY}:null},true);
-const reveal=()=>{const R=document.documentElement,p=tap||{x:innerWidth/2,y:innerHeight};R.style.setProperty("--rx",p.x+"px");R.style.setProperty("--ry",p.y+"px");return R};
+let vt;
 function go(){
   close();
   const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=()=>{view();scrollTo(0,0);enter();showInstall()};
   if(from===to){swap();return}
-  const R=reveal(),calmMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(document.startViewTransition&&!calmMotion){R.classList.add("reveal");vt?.skipTransition?.();vt=document.startViewTransition(swap);vt.finished.finally(()=>R.classList.remove("reveal"))}
-  else{swap();if(!calmMotion)$("#app").animate([{clipPath:`circle(0 at ${R.style.getPropertyValue("--rx")} ${R.style.getPropertyValue("--ry")})`},{clipPath:`circle(150vmax at ${R.style.getPropertyValue("--rx")} ${R.style.getPropertyValue("--ry")})`}],{duration:550,easing:"cubic-bezier(.22,1,.36,1)"})}
+  const R=document.documentElement,dir=to>from?"fwd":"back",calmMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(document.startViewTransition&&!calmMotion){R.dataset.dir=dir;vt?.skipTransition?.();vt=document.startViewTransition(swap);vt.finished.finally(()=>{delete R.dataset.dir})}
+  else{swap();if(!calmMotion)$("#app").animate([{transform:`translateX(${dir==="fwd"?40:-40}px)`,opacity:0},{transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.22,1,.36,1)"})}
 }
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(!$("#splash"))showInstall()});
-window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed")});
+window.addEventListener("appinstalled",()=>{deferred=null;toast("Budget Wise installed")});
 window.addEventListener("hashchange",go);
 (async()=>{
   try{await initializeDatabase();theme=await getSetting("themeMode","auto");applyTheme();await load();view()}
