@@ -222,6 +222,31 @@ nav a.on .ic{transform:translateY(-2px) scale(1.06);animation:navPop .3s cubic-b
 .add:active{transform:scale(.9)}
 .btn:active,.ib:active,.chip:active{transform:scale(.97)}
 .row,.chip,.seg button,.btn,.ib,.link{transition:background-color .12s,transform .12s,color .12s}
+
+/* Final text sizes (smaller, like a normal phone app) */
+body{font-size:14px}
+.top h1{font-size:19px}
+.top small{font-size:12px}
+.ringtxt b{font-size:28px}
+.ringtxt small{font-size:12px}
+h2{font-size:15px}
+.stats small{font-size:12px}
+.stats b{font-size:13px}
+.row .grow b{font-size:14px}
+.grow>span{font-size:12px}
+.amt{font-size:14px}
+.chip,.seg button{font-size:13px}
+.link{font-size:14px}
+.btn{font-size:15px;min-height:50px}
+.sheet h3{font-size:17px}
+label{font-size:12px}
+.in{font-size:15px;min-height:48px}
+.in.amount{font-size:22px;font-weight:700;min-height:54px}
+.empty{font-size:13px}
+.empty b{font-size:15px}
+nav a{font-size:11px}
+.ibar .grow{font-size:13px}
+#splash b{font-size:24px}
 </style>
 </head>
 <body>
@@ -319,7 +344,7 @@ function vAct(){
 function vPlan(){
   const m=mk(),seg=`<div class="seg stick"><button data-a="plan" data-v="budgets" class="${planTab==="budgets"?"on":""}">Budgets</button><button data-a="plan" data-v="goals" class="${planTab==="goals"?"on":""}">Savings goals</button></div>`;
   if(planTab==="goals")return top("Plan","Save for what matters")+seg+`<button class="link" data-a="goal">+ New goal</button>`+(S.goals.length?S.goals.map(g=>{const cur=savingsBalance(g.id,S.acts),p=Math.max(0,Math.min(100,Math.round(cur/g.targetAmount*100)));
-    return `<div class="card" style="margin-bottom:12px;padding:16px"><b style="font-size:16px">${esc(g.name)}</b><div style="color:var(--mute);font-size:14px">${peso(cur)} saved of ${peso(g.targetAmount)}${p>=100?" · Goal reached 🎉":""}</div><div class="bar"><i style="width:${p}%"></i></div><div style="display:flex;justify-content:space-between;margin-top:8px"><button class="link" data-a="activity" data-id="${esc(g.id)}">Deposit or withdraw</button><button class="link" data-a="delgoal" data-id="${esc(g.id)}" style="color:var(--exp)">Delete</button></div></div>`}).join(""):`<div class="card">${empty("No goals yet","Pick something to save for, like a phone or school fees.")}</div>`);
+    return `<div class="card" style="margin-bottom:12px;padding:16px"><b style="font-size:15px">${esc(g.name)}</b><div style="color:var(--mute);font-size:14px">${peso(cur)} saved of ${peso(g.targetAmount)}${p>=100?" · Goal reached 🎉":""}</div><div class="bar"><i style="width:${p}%"></i></div><div style="display:flex;justify-content:space-between;margin-top:8px"><button class="link" data-a="activity" data-id="${esc(g.id)}">Deposit or withdraw</button><button class="link" data-a="delgoal" data-id="${esc(g.id)}" style="color:var(--exp)">Delete</button></div></div>`}).join(""):`<div class="card">${empty("No goals yet","Pick something to save for, like a phone or school fees.")}</div>`);
   const mb=S.budgets.filter(b=>b.month===m),tot=plannedBudgetTotal(mb),sp=sumAmounts(S.tx.filter(t=>t.type==="expense"&&inMonth(t,m)));
   return top("Plan","Budgets for this month")+seg+(mb.length?`<div class="stats" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div><small>Planned</small><b>${peso(tot)}</b></div><div><small>Spent so far</small><b>${peso(sp)}</b></div></div>`:"")+`<div class="card">${catsOf("expense").map(c=>{const b=mb.find(x=>x.category===c),s=b?budgetActual(S.tx,b):0,p=b?s/b.amount*100:0;
   return `<button class="row" data-a="budget" data-c="${esc(c)}"><span class="em">${em(c)}</span><span class="grow"><b>${esc(c)}</b><span>${b?peso(s)+" of "+peso(b.amount):"Tap to set a monthly limit"}</span>${b?`<div class="bar"><i style="width:${Math.min(100,p)}%;background:${barColor(p)}"></i></div>`:""}</span></button>`}).join("")}</div>`;
