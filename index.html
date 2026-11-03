@@ -167,8 +167,8 @@ nav>*{pointer-events:auto}
 <nav id="nav" aria-label="Main navigation"></nav>
 <div class="shade" id="shade"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <script type="module">
-import {initializeDatabase,getAll,putRecord,deleteRecord,getSetting,setSetting} from "./database.js";
-import {validAmount,sumAmounts,cashBalance,budgetActual,savingsBalance,plannedBudgetTotal} from "./finance.js";
+import {initializeDatabase,getAll,putRecord,deleteRecord,getSetting,setSetting} from "./js/database.js";
+import {validAmount,sumAmounts,cashBalance,budgetActual,savingsBalance,plannedBudgetTotal} from "./js/finance.js";
 const $=s=>document.querySelector(s);
 const peso=n=>new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP"}).format(n||0);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
