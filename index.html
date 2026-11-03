@@ -247,6 +247,22 @@ label{font-size:12px}
 nav a{font-size:11px}
 .ibar .grow{font-size:13px}
 #splash b{font-size:24px}
+
+/* Aesthetic page change: a soft circle opens from the tab you tapped, the old page sinks back, content floats in */
+@keyframes reveal{from{clip-path:circle(0 at var(--rx,50%) var(--ry,100%))}to{clip-path:circle(150vmax at var(--rx,50%) var(--ry,100%))}}
+@keyframes sink{to{opacity:.55;transform:scale(.97)}}
+html.reveal::view-transition-old(page){animation:.5s cubic-bezier(.4,0,.2,1) both sink}
+html.reveal::view-transition-new(page){animation:.6s cubic-bezier(.22,1,.36,1) both reveal}
+::view-transition-group(page){overflow:clip}
+@keyframes float{from{opacity:0;transform:translateY(18px)}}
+#app.enter>*{animation:float .5s cubic-bezier(.22,1,.36,1) both}
+#app.enter>*:nth-child(1){animation-delay:.12s}#app.enter>*:nth-child(2){animation-delay:.18s}#app.enter>*:nth-child(3){animation-delay:.24s}#app.enter>*:nth-child(4){animation-delay:.30s}#app.enter>*:nth-child(5){animation-delay:.36s}#app.enter>*:nth-child(n+6){animation-delay:.42s}
+/* sliding marker above the active tab */
+.ind{position:absolute;top:0;left:0;width:30px;height:3px;border-radius:0 0 4px 4px;background:var(--ac);transition:transform .45s cubic-bezier(.22,1,.36,1)}
+#app{background:var(--bg)}
+/* normal-size amount field */
+.in.amount{font-size:16px;font-weight:600;min-height:48px;letter-spacing:0}
+.in.amount::placeholder{font-weight:500}
 </style>
 </head>
 <body>
@@ -303,14 +319,17 @@ const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
 const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
+const placeInd=()=>{const nv=$("#nav"),on=nv.querySelector("a.on"),i=nv.querySelector(".ind");if(on&&i)i.style.transform=`translateX(${on.offsetLeft+on.offsetWidth/2-15}px)`};
+addEventListener("resize",placeInd);
 function view(){
   let r=(location.hash||"#dashboard").slice(1);
   if(r==="budgets"||r==="savings"){planTab=r==="savings"?"goals":"budgets";r="plan"}
   const page=TABS.some(t=>t[0]===r)?r:"dashboard";curPage=page;
   $("#app").innerHTML={dashboard:vDash,transactions:vAct,plan:vPlan,reports:vRep}[page]();
   const nv=$("#nav"),link=t=>`<a href="#${t[0]}">${ic(t[2])}${t[1]}</a>`;
-  if(!nv.children.length)nv.innerHTML=TABS.slice(0,2).map(link).join("")+`<button class="add" data-a="add">${ic("plus")}</button>`+TABS.slice(2).map(link).join("");
+  if(!nv.children.length)nv.innerHTML='<i class="ind"></i>'+TABS.slice(0,2).map(link).join("")+`<button class="add" data-a="add">${ic("plus")}</button>`+TABS.slice(2).map(link).join("");
   nv.querySelectorAll("a").forEach(a=>{const on=a.getAttribute("href")==="#"+page;a.classList.toggle("on",on);if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  placeInd();
   nv.querySelector(".add").setAttribute("aria-label",page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction");
 }
 let RING={},deferred=null;
@@ -448,14 +467,16 @@ function enter(){
 }
 const order=["dashboard","transactions","plan","reports"];
 const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard"};
-let vt;
+let vt,tap=null;
+document.addEventListener("pointerdown",e=>{const a=e.target.closest?.("nav a");tap=a?{x:e.clientX,y:e.clientY}:null},true);
+const reveal=()=>{const R=document.documentElement,p=tap||{x:innerWidth/2,y:innerHeight};R.style.setProperty("--rx",p.x+"px");R.style.setProperty("--ry",p.y+"px");return R};
 function go(){
   close();
   const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=()=>{view();scrollTo(0,0);enter();showInstall()};
   if(from===to){swap();return}
-  const dir=to>from?"fwd":"back";
-  if(document.startViewTransition&&!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.dir=dir;(vt?.skipTransition?.(),vt=document.startViewTransition(swap))}
-  else{swap();if(!matchMedia("(prefers-reduced-motion: reduce)").matches)$("#app").animate([{opacity:0,transform:`translateX(${dir==="fwd"?28:-28}px)`},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"})}
+  const R=reveal(),calmMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(document.startViewTransition&&!calmMotion){R.classList.add("reveal");vt?.skipTransition?.();vt=document.startViewTransition(swap);vt.finished.finally(()=>R.classList.remove("reveal"))}
+  else{swap();if(!calmMotion)$("#app").animate([{clipPath:`circle(0 at ${R.style.getPropertyValue("--rx")} ${R.style.getPropertyValue("--ry")})`},{clipPath:`circle(150vmax at ${R.style.getPropertyValue("--rx")} ${R.style.getPropertyValue("--ry")})`}],{duration:550,easing:"cubic-bezier(.22,1,.36,1)"})}
 }
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(!$("#splash"))showInstall()});
 window.addEventListener("appinstalled",()=>{deferred=null;toast("PesoWise installed")});
