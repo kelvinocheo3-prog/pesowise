@@ -28,7 +28,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top h1{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.1}
 .top .logo, .logoimg{width:40px;height:40px;border-radius:12px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:48px;height:48px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
-.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.13);border-radius:28px;padding:16px 20px;text-align:center;margin-bottom:14px}
+.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.13);border-radius:28px;padding:16px 20px;text-align:center;margin-bottom:12px}
 .ring{position:relative;width:190px;height:190px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:9;stroke-linecap:round}
@@ -37,11 +37,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .ringtxt small{font-size:12px;opacity:1;font-weight:600;color:var(--mute)}
 .ringtxt b{font-size:26px;font-weight:800;letter-spacing:-.03em}
 .hero p{margin:0 auto;max-width:300px;font-size:14px;opacity:.92}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px}
 .stats small{display:block;color:var(--mute);font-size:12px;font-weight:600}
-.stats b{font-size:13px}
-h2{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:22px 0 10px}
+.stats b{font-size:14px;font-weight:500}
+h2{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:16px 0 10px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:4px 16px}
 .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
 .row:last-child{border:0}
@@ -67,7 +67,7 @@ h2{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:22px 0 10px}
 .seg button{min-height:44px;border-radius:999px;font-weight:700;color:var(--mute);font-size:13px}
 .seg button.on,.seg .on{background:var(--bg);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.18)}
 .in{width:100%;min-height:48px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;padding:0 14px;margin-bottom:12px;font-size:15px}
-.in.amount{font-size:22px;font-weight:600;min-height:54px;letter-spacing:0}
+.in.amount{font-size:16px;font-weight:normal;min-height:50px;letter-spacing:0}
 label{display:block;font-size:12px;color:var(--mute);font-weight:700;margin:0 0 6px}
 .btn{width:100%;min-height:50px;border-radius:999px;background:var(--ac);color:var(--ac-ink);font-weight:800;font-size:15px;margin-top:6px}
 .btn.ghost{background:var(--card);color:var(--ink)}.btn.del{background:none;color:var(--exp)}
@@ -347,7 +347,7 @@ const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"|
 let vt;
 function go(){
   close();
-  const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=()=>{view();scrollTo(0,0);enter();showInstall()};
+  const from=order.indexOf(curPage),to=order.indexOf(pageOf()),swap=(_, __, rx, ry)=>{view();scrollTo(0,0);enter();showInstall()};
   if(from===to){swap();return}
   const R=document.documentElement,dir=to>from?"fwd":"back",calmMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(document.startViewTransition&&!calmMotion){R.dataset.dir=dir;vt?.skipTransition?.();vt=document.startViewTransition(swap);vt.finished.finally(()=>{delete R.dataset.dir})}
