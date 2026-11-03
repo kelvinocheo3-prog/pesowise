@@ -273,12 +273,17 @@ const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
 const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
-const placeInd=()=>{
-  const i=$("#nav .ind");
-  if(!i)return;
-  const idx=Math.max(0,TABS.findIndex(t=>t[0]===curPage));
-  const pillIdx = idx >= 2 ? idx + 1 : idx;
-  i.style.transform=`translateX(calc(${pillIdx} * 100%))`;
+const placeInd = () => {
+  const pill = $("#nav .pill");
+  const ind = $("#nav .ind");
+  if (!pill || !ind) return;
+  const idx = Math.max(0, TABS.findIndex(t => t[0] === curPage));
+  const links = pill.querySelectorAll("a");
+  if (links[idx]) {
+    const link = links[idx];
+    ind.style.width = `${link.offsetWidth}px`;
+    ind.style.transform = `translateX(${link.offsetLeft - 4}px)`;
+  }
 };
 
 function view(){
