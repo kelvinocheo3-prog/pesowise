@@ -13,9 +13,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 @font-face{font-family:Inter;src:url(assets/fonts/inter-latin-variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
-:root{--bg:#fff;--card:#f1f1f1;--ink:#111;--mute:#585858;--line:#d4d4d4;--ac:#0a6cba;--ac-ink:#fff;--exp:#d93025;--inc:#188038;--warn:#f29900;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#4aa3ff;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}}
-:root[data-theme="dark"]{--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#4aa3ff;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}
+:root{--bg:#fff;--card:#f1f1f1;--ink:#111;--mute:#585858;--line:#d4d4d4;--ac:#00b4d8;--ac-ink:#fff;--exp:#d93025;--inc:#188038;--warn:#f29900;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#00f2fe;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}}
+:root[data-theme="dark"]{--bg:#121212;--card:#1f1f1f;--ink:#f2f2f2;--mute:#a3a3a3;--line:#333;--ac:#00f2fe;--ac-ink:#06213a;--exp:#ff7b72;--inc:#4cd37f}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px);scrollbar-gutter:stable;overflow-x:clip}
 body{overflow-x:clip}
@@ -29,16 +29,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 .hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.08);border-radius:28px;padding:20px;text-align:center;margin-bottom:12px}
-.ring{position:relative;width:200px;height:200px;margin:0 auto;display:block}
+
+/* Aesthetic Neon Glowing Progress Ring */
+.ring{position:relative;width:210px;height:210px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:9;stroke-linecap:round}
-.r0{stroke:var(--line)}
-.r1{stroke:var(--ac);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 2px 6px rgba(10,108,186,.35))}
+.ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.r0{stroke:var(--line);opacity:0.4}
+.r1{stroke:url(#cyanGrad);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 0 10px rgba(0,242,254,0.6))}
 .ring-progress-wrapper{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.22,1,.36,1);transform:rotate(0deg);pointer-events:none}
-.ring-dot{position:absolute;top:5.5px;left:50%;width:14px;height:14px;background:var(--ac);border:2px solid var(--bg);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 10px rgba(10,108,186,.6)}
-.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 20px}
+.ring-dot{position:absolute;top:5px;left:50%;width:14px;height:14px;background:#00f2fe;border:2px solid var(--bg);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 12px #00f2fe, 0 0 20px #4facfe}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 24px}
 .ringtxt small{font-size:11px;font-weight:600;color:var(--mute)}
 .ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em}
+
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
 .stats small{display:block;color:var(--mute);font-size:11px;font-weight:600}
@@ -118,30 +121,37 @@ nav>*{pointer-events:auto}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <rect width="7" height="9" x="3" y="3" rx="1" />
-  <rect width="7" height="5" x="14" y="3" rx="1" />
-  <rect width="7" height="9" x="14" y="12" rx="1" />
-  <rect width="7" height="5" x="3" y="16" rx="1" />
-</symbol><symbol id="arrow-left-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M8 3 4 7l4 4" />
-  <path d="M4 7h16" />
-  <path d="m16 21 4-4-4-4" />
-  <path d="M20 17H4" />
-</symbol><symbol id="wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
-  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-</symbol><symbol id="chart-no-axes-column-increasing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 21v-6" />
-  <path d="M12 21V9" />
-  <path d="M19 21V3" />
-</symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915" />
-  <circle cx="12" cy="12" r="3" />
-</symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 12h14" />
-  <path d="M12 5v14" />
-</symbol></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <!-- Glowing Cyan/Blue Gradient definition for progressive aesthetic trail -->
+  <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#4facfe"/>
+    <stop offset="100%" stop-color="#00f2fe"/>
+  </linearGradient>
+  <symbol id="layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="7" height="9" x="3" y="3" rx="1" />
+    <rect width="7" height="5" x="14" y="3" rx="1" />
+    <rect width="7" height="9" x="14" y="12" rx="1" />
+    <rect width="7" height="5" x="3" y="16" rx="1" />
+  </symbol><symbol id="arrow-left-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3 4 7l4 4" />
+    <path d="M4 7h16" />
+    <path d="m16 21 4-4-4-4" />
+    <path d="M20 17H4" />
+  </symbol><symbol id="wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+  </symbol><symbol id="chart-no-axes-column-increasing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 21v-6" />
+    <path d="M12 21V9" />
+    <path d="M19 21V3" />
+  </symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915" />
+    <circle cx="12" cy="12" r="3" />
+  </symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </symbol>
+</svg>
 <div id="splash" aria-hidden="true"><div id="splogo" role="img" aria-label="Budget Wise logo"></div><b>Budget Wise</b><span>Track &amp; Save</span><i></i></div>
 <div class="ibar" id="ibar" role="status"><span class="logo logoimg" role="img" aria-label="Budget Wise"></span><span class="grow">Install our app, no Play Store required!</span><button class="ib2" data-a="install">Install</button><button class="x" data-a="ibarx" aria-label="Dismiss">✕</button></div>
 <div id="app" aria-live="polite"></div>
