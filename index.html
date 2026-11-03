@@ -72,7 +72,7 @@ nav a.on{color:var(--ac)}
 .seg button{min-height:44px;border-radius:12px;font-weight:700;color:var(--mute)}
 .seg button.on,.seg .on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.16)}
 .in{width:100%;min-height:52px;border-radius:16px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;padding:0 14px;margin-bottom:12px}
-.in.amount{font-size:34px;font-weight:800;min-height:70px;letter-spacing:-.02em}
+.in.amount{font-size:16px;font-weight:400;min-height:56px;letter-spacing:normal}
 label{display:block;font-size:13px;color:var(--mute);font-weight:700;margin:0 0 6px}
 .btn{width:100%;min-height:54px;border-radius:18px;background:var(--ac);color:var(--ac-ink);font-weight:800;font-size:17px;margin-top:6px}
 .btn.ghost{background:var(--bg);color:var(--ink)}.btn.del{background:none;color:var(--exp)}
@@ -249,7 +249,7 @@ function ringSheet(){
   const R=RING,st=(t,v,d)=>`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:12px"><b>${t}</b><b>${v}</b></div><div style="color:var(--mute);font-size:14px;margin-top:2px">${d}</div></div>`;
   sheet(`<h3>How your daily amount works</h3><p style="margin:0 0 6px;color:var(--mute)">This is how much you can spend today and still stay on track for the rest of the month.</p>`+
   st("1. Money left this month",peso(Math.max(0,R.rem)),R.hasB?`Your budgets add up to ${peso(R.tot)} and you have spent ${peso(R.exp)} so far this month.`:`You haven’t set any budgets yet, so we use the money you have now (${peso(R.bal)}).`)+
-  st("2. Days left, including today",String(R.dl),"We spread your money evenly over these days.")+
+  st("2. Days left, including today",String(R.dl),"We spread your money evenly over these days.")+ 
   st("3. Your amount for each day",peso(R.allow),`${peso(Math.max(0,R.rem)+R.ts)} ÷ ${R.dl} days. The ring shows how much of this is still left.`)+
   st("4. Spent today",peso(R.ts),R.left>=0?`So you can still spend <b>${peso(R.left)}</b> today.`:`That is <b>${peso(-R.left)}</b> more than your amount for today.`)+
   `<p style="color:var(--mute);font-size:14px">The ring starts fresh every day and changes when you add or delete a transaction.</p>`+
