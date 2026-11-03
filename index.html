@@ -28,15 +28,16 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top h1{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.1}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
-.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.1);border-radius:24px;padding:16px;text-align:center;margin-bottom:12px}
+.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.08);border-radius:28px;padding:20px;text-align:center;margin-bottom:12px}
 .ring{position:relative;width:200px;height:200px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
-.r0{stroke:var(--line)}.r1{stroke:var(--ac);transition:stroke-dasharray 1s cubic-bezier(.22,1,.36,1)}
-.ring-progress-wrapper{position:absolute;inset:0;transition:transform 1s cubic-bezier(.22,1,.36,1);transform:rotate(0deg)}
-.ring-dot{position:absolute;top:6px;left:50%;width:12px;height:12px;background:var(--ac);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 8px var(--ac)}
-.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:0 20px}
-.ringtxt small{font-size:11px;opacity:1;font-weight:600;color:var(--mute)}
+.ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.r0{stroke:var(--line)}
+.r1{stroke:var(--ac);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 2px 6px rgba(10,108,186,.35))}
+.ring-progress-wrapper{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.22,1,.36,1);transform:rotate(0deg);pointer-events:none}
+.ring-dot{position:absolute;top:5.5px;left:50%;width:14px;height:14px;background:var(--ac);border:2px solid var(--bg);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 10px rgba(10,108,186,.6)}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 20px}
+.ringtxt small{font-size:11px;font-weight:600;color:var(--mute)}
 .ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
@@ -135,7 +136,7 @@ nav>*{pointer-events:auto}
   <path d="M12 21V9" />
   <path d="M19 21V3" />
 </symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915" />
   <circle cx="12" cy="12" r="3" />
 </symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M5 12h14" />
@@ -168,7 +169,6 @@ const toast=(m,ms=2400)=>{navigator.vibrate?.(12);const t=document.createElement
 const empty=(a,b)=>`<div class="empty"><b>${a}</b>${b}</div>`;
 const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-items:center;gap:12px">${logo?`<span class="logo logoimg" role="img" aria-label="Budget Wise"></span>`:""}<div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
-const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
 const placeInd = () => {
   const pill = $("#nav .pill");
@@ -213,7 +213,6 @@ function vDash(){
     const ringCircle = $("#ringCircle");
     const countEl = $("#ringCount");
     if(dotWrap && ringCircle && countEl){
-      // Trigger smooth CSS glide & count animation together
       dotWrap.style.transform = `rotate(${targetDeg}deg)`;
       ringCircle.style.strokeDasharray = `${(C*frac).toFixed(1)} ${C}`;
       
