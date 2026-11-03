@@ -114,11 +114,6 @@ nav>*{pointer-events:auto}
 .pill a .ic{width:20px;height:20px;transform:none!important;animation:none!important}
 .ind{position:absolute;top:3px;bottom:3px;left:3px;width:30px;height:auto;border-radius:999px;background:var(--seg);transition:transform .45s cubic-bezier(.22,1,.36,1)}
 .add{margin:0 4px;width:46px;height:46px;border:0;flex:none;z-index:2;box-shadow:0 8px 20px rgba(10,108,186,.38);background:var(--ac);color:var(--ac-ink);border-radius:50%;display:grid;place-items:center}
-
-/* Live indicator */
-.lv{display:flex;align-items:center;gap:8px}
-.live{width:8px;height:8px;border-radius:50%;background:var(--inc);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(24,128,56,.45)}70%,100%{box-shadow:0 0 0 8px rgba(24,128,56,0)}}
 </style>
 </head>
 <body>
@@ -210,10 +205,8 @@ function vDash(){
   const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
   RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
-  const dom=now.getDate(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),proj=exp>0?exp/dom*dim:0;
   return top("Budget Wise",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+`<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="r0" cx="60" cy="60" r="52"/><circle class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:${(C*frac).toFixed(1)} ${C}"/></svg><span class="ringtxt"><small>${left>=0?"You can still spend today":"Over today’s limit by"}</small><b data-count="${Math.abs(left)}">${peso(Math.abs(left))}</b></span></button></section>
   <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
-  ${exp>0?`<div class="card" style="padding:12px 16px;margin-top:10px"><div class="lv"><span class="live"></span><b>Live forecast</b></div><div style="color:var(--mute);margin-top:4px">At this pace you’ll spend about <b style="color:var(--ink)">${peso(proj)}</b> by the end of the month.${hasB?` That is ${peso(Math.abs(proj-tot))} <b style="color:${proj>tot?"var(--exp)":"var(--inc)"}">${proj>tot?"over":"under"}</b> your ${peso(tot)} budget.`:""}</div></div>`:""}
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
 }
 function ringSheet(){
