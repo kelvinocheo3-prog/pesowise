@@ -29,17 +29,15 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 
-/* Hero Card & Rotating Neon Loader Ring Style matching reference */
+/* Hero Card & Continuous Rotating Neon Fluid Animation */
 .hero{background:radial-gradient(circle at center, #0b1320 0%, #04070d 100%);color:#fff;border:1px solid rgba(0,242,254,0.25);box-shadow:0 16px 40px rgba(0,198,255,0.18), inset 0 0 24px rgba(0,242,254,0.06);border-radius:24px;padding:20px;text-align:center;margin-bottom:12px}
 .ring{position:relative;width:210px;height:210px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-linecap:round}
 .r0{stroke:rgba(0,242,254,0.18);stroke-width:3}
-.r1{stroke:url(#neonCyanGlow);stroke-width:3.5;filter:url(#intenseGlow);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1)}
-.ring-progress-wrapper{position:absolute;inset:0;animation:spinLoader 3.5s linear infinite;pointer-events:none}
+.ring-spin-wrap{position:absolute;inset:0;animation:spinLoader 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;pointer-events:none}
 @keyframes spinLoader{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.ring-swoosh-container{position:absolute;inset:0;animation:spinLoader 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;pointer-events:none}
-.r-swoosh{stroke:url(#swooshGrad);stroke-width:8;filter:url(#intenseGlow);stroke-dasharray:70 300;stroke-linecap:round}
+.r-swoosh{stroke:url(#swooshGrad);stroke-width:8;filter:url(#intenseGlow);stroke-dasharray:75 320;stroke-linecap:round}
 .ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 24px}
 .ringtxt small{font-size:11px;font-weight:600;color:#8ab4f8}
 .ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em;color:#fff}
@@ -125,17 +123,13 @@ nav>*{pointer-events:auto}
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f2fe"/>
-      <stop offset="100%" stop-color="#4facfe"/>
-    </linearGradient>
     <linearGradient id="swooshGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00ffff"/>
       <stop offset="50%" stop-color="#00c6ff"/>
-      <stop offset="100%" stop-color="#0072ff"/>
+      <stop offset="100%" stop-color="#0052d4"/>
     </linearGradient>
     <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feGaussianBlur stdDeviation="6" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -194,7 +188,6 @@ const toast=(m,ms=2400)=>{navigator.vibrate?.(12);const t=document.createElement
 const empty=(a,b)=>`<div class="empty"><b>${a}</b>${b}</div>`;
 const top=(t,s="",logo=false)=>`<div class="top"><div style="display:flex;align-items:center;gap:12px">${logo?`<span class="logo logoimg" role="img" aria-label="Budget Wise"></span>`:""}<div>${s?`<small>${s}</small>`:""}<h1>${t}</h1></div></div><button class="ib" data-a="settings" aria-label="Settings">${ic("settings")}</button></div>`;
 const txRow=t=>`<button class="row" data-a="tx" data-id="${esc(t.id)}"><span class="em">${em(t.category)}</span><span class="grow"><b>${esc(t.description||t.category)}</b><span>${esc(t.category)} · ${t.date}</span></span><span class="amt ${t.type}">${t.type==="expense"?"−":"+"}${peso(t.amount)}</span></button>`;
-const barColor=p=>p>=100?"var(--exp)":p>=80?"var(--warn)":"var(--ac)";
 
 const placeInd = () => {
   const pill = $("#nav .pill");
@@ -228,20 +221,14 @@ function vDash(){
   const m=mk(),now=new Date(),dl=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
   const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense")),bal=cashBalance(S.tx);
   const ts=sumAmounts(S.tx.filter(t=>t.type==="expense"&&t.date===today())),mb=S.budgets.filter(b=>b.month===m),hasB=mb.length>0,tot=hasB?plannedBudgetTotal(mb):0;
-  const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts,frac=allow>0?Math.max(0,Math.min(1,left/allow)):0,C=326.7;
+  const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts;
   RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
   const targetVal = Math.abs(left);
-  const targetDeg = (1 - frac) * 360;
 
   setTimeout(()=>{
-    const dotWrap = $("#ringProgress");
-    const ringCircle = $("#ringCircle");
     const countEl = $("#ringCount");
-    if(dotWrap && ringCircle && countEl){
-      dotWrap.style.transform = `rotate(${targetDeg}deg)`;
-      ringCircle.style.strokeDasharray = `${(C*frac).toFixed(1)} ${C}`;
-      
+    if(countEl){
       const t0 = performance.now();
       const animCount = (t) => {
         const p = Math.min(1, (t - t0) / 1000);
@@ -257,10 +244,8 @@ function vDash(){
   `<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out">
     <svg viewBox="0 0 120 120" aria-hidden="true">
       <circle class="r0" cx="60" cy="60" r="52"/>
-      <circle id="ringCircle" class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:0 326.7"/>
     </svg>
-    <div class="ring-swoosh-container"><svg viewBox="0 0 120 120" aria-hidden="true" style="width:100%;height:100%"><circle class="r-swoosh" cx="60" cy="60" r="52"/></svg></div>
-    <div id="ringProgress" class="ring-progress-wrapper" style="transform: rotate(0deg)"></div>
+    <div class="ring-spin-wrap"><svg viewBox="0 0 120 120" aria-hidden="true" style="width:100%;height:100%"><circle class="r-swoosh" cx="60" cy="60" r="52"/></svg></div>
     <span class="ringtxt">
       <small>${left>=0?"You can still spend today":"Over today’s limit by"}</small>
       <b id="ringCount">${peso(0)}</b>
