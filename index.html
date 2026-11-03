@@ -115,27 +115,7 @@ html[data-dir="back"]::view-transition-new(page){animation:.45s cubic-bezier(.34
 .top{position:sticky;top:0;z-index:6;height:68px;margin:-14px -16px 14px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line)}
 .top h1{font-size:22px;letter-spacing:-.02em}
 .top small{font-size:12px}
-.top .logo{width:40px;height:40px;border-radius:12px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center}
-.ib{background:var(--card);border-radius:999px}
-.hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.13);border-radius:28px}
-.r0{stroke:var(--line)}.r1{stroke:var(--ac)}
-.ringtxt small{color:var(--mute);opacity:1}
-.stats div{background:var(--card)}
-.chip,.seg,.seg button,.btn{border-radius:999px}
-.chip{background:var(--bg)}
-.chip.on{background:var(--ac);color:var(--ac-ink)}
-.seg{background:var(--card)}
-.seg button.on{background:var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.seg.stick{top:calc(env(safe-area-inset-top,0px) + 76px);background:var(--line)}
-.btn.ghost{background:var(--card)}
-.sheet{background:var(--bg)}
-.in{background:var(--card);border-radius:16px}
-.add{box-shadow:0 8px 20px rgba(10,108,186,.38);background:var(--ac);color:var(--ac-ink);border-radius:50%;display:grid;place-items:center;flex:none}
-
-/* Splash screen */
-#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .45s ease}
-#splash.out{opacity:0;pointer-events:none}
-#splogo{width:132px;height:132px;border-radius:32px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center}
+.top .logo, .logoimg{width:40px;height:40px;border-radius:12px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{background:var(--card);border-radius:999px}
 .hero{background:var(--bg);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.13);border-radius:28px}
 .r0{stroke:var(--line)}.r1{stroke:var(--ac)}
@@ -454,7 +434,7 @@ document.addEventListener("click",async e=>{
       `<div class="seg"><button id="k1" class="on">Deposit</button><button id="k2">Withdraw</button></div>`);
     $("#k1").onclick=()=>{kind="deposit";$("#k1").className="on";$("#k2").className=""};$("#k2").onclick=()=>{kind="withdrawal";$("#k2").className="on";$("#k1").className=""}}
   else if(a==="delgoal"){if(confirm("Delete this goal and its deposits?")){for(const x of S.acts.filter(z=>z.goalId===id)){await deleteRecord("savingsActivities",x.id);if(x.linkedTransactionId)await deleteRecord("transactions",x.linkedTransactionId)}await deleteRecord("savingsGoals",id);await refresh()}}
-  else if(a==="csv"){const q=s=>`"${String(s??"").replace(/"/g,'""')}"`,rows=[["Date","Type","Category","Description","Amount"],...[...S.tx].sort(byDate).make(x=>[x.date,x.type,x.category,x.description,x.amount])];
+  else if(a==="csv"){const q=s=>`"${String(s??"").replace(/"/g,'""')}"`,rows=[["Date","Type","Category","Description","Amount"],...[...S.tx].sort(byDate).map(x=>[x.date,x.type,x.category,x.description,x.amount])];
     const u=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"})),l=document.createElement("a");l.href=u;l.download="budgetwise-transactions.csv";l.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 });
 const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
