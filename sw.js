@@ -1,4 +1,4 @@
-const CACHE_NAME = 'budgetwise-shell-v40';
+const CACHE_NAME = 'budgetwise-shell-v42';
 const APP_ASSETS = [
   './',
   './index.html',
