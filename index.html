@@ -31,7 +31,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 /* Hero Card & Continuous Rotating Neon Fluid Animation */
 .hero{background:radial-gradient(circle at center, #0b1320 0%, #04070d 100%);color:#fff;border:1px solid rgba(0,242,254,0.25);box-shadow:0 16px 40px rgba(0,198,255,0.18), inset 0 0 24px rgba(0,242,254,0.06);border-radius:24px;padding:20px;text-align:center;margin-bottom:12px}
- .hero-art{display:block;width:min(100%,400px);height:auto;margin:0 auto;border-radius:14px}
+.ring{position:relative;width:210px;height:210px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-linecap:round}
 .r0{stroke:rgba(0,242,254,0.18);stroke-width:3}
@@ -216,18 +216,53 @@ function view(){
   placeInd();
   nv.querySelector(".add").setAttribute("aria-label",page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction");
 }
-let deferred=null;
+let RING={},deferred=null;
 function vDash(){
   const m=mk(),now=new Date(),dl=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
   const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense")),bal=cashBalance(S.tx);
   const ts=sumAmounts(S.tx.filter(t=>t.type==="expense"&&t.date===today())),mb=S.budgets.filter(b=>b.month===m),hasB=mb.length>0,tot=hasB?plannedBudgetTotal(mb):0;
   const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts;
+  RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
+  const targetVal = Math.abs(left);
+
+  setTimeout(()=>{
+    const countEl = $("#ringCount");
+    if(countEl){
+      const t0 = performance.now();
+      const animCount = (t) => {
+        const p = Math.min(1, (t - t0) / 1000);
+        const k = 1 - Math.pow(1 - p, 3);
+        countEl.textContent = peso(targetVal * k);
+        if(p < 1) requestAnimationFrame(animCount);
+      };
+      requestAnimationFrame(animCount);
+    }
+  }, 50);
 
   return top("Budget Wise",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+
-  `<section class="hero"><img class="hero-art" src="./bd5a4126-4c80-44f1-a148-ac81af77ecb2.gif" alt="Smart matching" width="800" height="600"></section>
+  `<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="r0" cx="60" cy="60" r="52"/>
+    </svg>
+    <div class="ring-spin-wrap"><svg viewBox="0 0 120 120" aria-hidden="true" style="width:100%;height:100%"><circle class="r-swoosh" cx="60" cy="60" r="52"/></svg></div>
+    <span class="ringtxt">
+      <small>${left>=0?"You can still spend today":"Over today’s limit by"}</small>
+      <b id="ringCount">${peso(0)}</b>
+    </span>
+  </button></section>
   <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
+}
+function ringSheet(){
+  const R=RING,st=(t,v,d)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:12px"><b>${t}</b><b>${v}</b></div><div style="color:var(--mute);font-size:13px;margin-top:2px">${d}</div></div>`;
+  sheet(`<h3>How your daily amount works</h3><p style="margin:0 0 6px;color:var(--mute)">This is how much you can spend today and still stay on track for the rest of the month.</p>`+
+  st("1. Money left this month",peso(Math.max(0,R.rem)),R.hasB?`Your budgets add up to ${peso(R.tot)} and you have spent ${peso(R.exp)} so far this month.`:`You haven’t set any budgets yet, so we use the money you have now (${peso(R.bal)}).`)+
+  st("2. Days left, including today",String(R.dl),"We spread your money evenly over these days.")+
+  st("3. Your amount for each day",peso(R.allow),`${peso(Math.max(0,R.rem)+R.ts)} ÷ ${R.dl} days. The ring shows how much of this is still left.`)+
+  st("4. Spent today",peso(R.ts),R.left>=0?`So you can still spend <b>${peso(R.left)}</b> today.`:`That is <b>${peso(-R.left)}</b> more than your amount for today.`)+
+  `<p style="color:var(--mute);font-size:13px">The ring starts fresh every day and changes when you add or delete a transaction.</p>`+
+  (R.hasB?"":`<button class="btn" data-a="gotoplan">Set a budget</button>`)+`<button class="btn ghost" data-a="close">Got it</button>`);
 }
 function vAct(){
   const list=S.tx.filter(t=>filter==="all"||t.type===filter).sort(byDate),g={};list.forEach(t=>(g[t.date]=g[t.date]||[]).push(t));
@@ -322,6 +357,7 @@ document.addEventListener("click",async e=>{
       view();
     }
   }
+  else if(a==="ring")ringSheet();
   else if(a==="ibarx")hideBar();
   else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
   else if(a==="gotoplan"){close();planTab="budgets";location.hash="plan"}
