@@ -124,7 +124,6 @@ nav>*{pointer-events:auto}
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <!-- Multi-layered glowing neon cyan gradients matching your image -->
     <linearGradient id="neonFluidMain" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00f2fe"/>
       <stop offset="100%" stop-color="#4facfe"/>
@@ -435,7 +434,7 @@ function enter(){
   document.querySelectorAll("[data-count]").forEach(el=>{const v=+el.dataset.count,t0=performance.now(),f=t=>{const p=Math.min(1,(t-t0)/650),k=1-Math.pow(1-p,3);el.textContent=peso(v*k);if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
 }
 const order=["dashboard","transactions","plan","reports"];
-const pageOf=(),let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard";
+const pageOf=()=>{let p=(location.hash||"#dashboard").slice(1);if(p==="budgets"||p==="savings")p="plan";return order.includes(p)?p:"dashboard"};
 let vt;
 function go(){
   close();
