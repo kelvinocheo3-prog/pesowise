@@ -29,21 +29,72 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 
-/* Hero loader matching the supplied video reference */
-.hero{background:radial-gradient(ellipse at 50% 48%,#071b36 0%,#030912 58%,#020407 100%);color:#fff;border:1px solid rgba(0,198,255,.18);box-shadow:0 16px 40px rgba(0,110,255,.16),inset 0 0 32px rgba(0,150,255,.05);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:12px;min-height:260px;display:grid;place-items:center;overflow:hidden}
-.hero-loader{position:relative;width:210px;height:210px;margin:auto;isolation:isolate}
-.hero-loader svg{width:100%;height:100%;display:block;overflow:visible}
-.loader-halo{fill:none;stroke:#087cff;stroke-width:9;opacity:.34;filter:blur(12px)}
-.loader-orbit{fill:none;stroke:#d9f8ff;stroke-width:1.8;filter:url(#ringGlow)}
-.loader-inner{fill:url(#innerFill);stroke:#07385c;stroke-width:1.4;filter:url(#innerGlow)}
-.fluid-spin{transform-origin:60px 60px;animation:fluidOrbit 3.1s linear infinite}
-.fluid-main{fill:#00f4d7;filter:url(#fluidGlow)}
-.fluid-edge{fill:none;stroke:#00bfff;stroke-width:1.4;stroke-linecap:round;opacity:.95;filter:url(#fluidGlow)}
-.fluid-spin{animation-name:fluidOrbit,fluidPulse;animation-duration:3.1s,3.1s;animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite}
-@keyframes fluidOrbit{to{transform:rotate(360deg)}}
-@keyframes fluidPulse{0%,8%,58%,100%{opacity:1}25%,42%{opacity:.12}70%,86%{opacity:.85}}
-@media(prefers-reduced-motion:reduce){.fluid-spin{animation:none;opacity:1}}
-
+/* Hero card: glowing white/cyan orbit with a rotating fluid swoosh */
+.hero{
+  position:relative;
+  min-height:260px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  isolation:isolate;
+  background:radial-gradient(ellipse at 50% 48%,#061d3c 0%,#031020 48%,#01070e 100%);
+  color:#fff;
+  border:1px solid rgba(0,210,255,.16);
+  box-shadow:0 16px 40px rgba(0,110,255,.16),inset 0 0 34px rgba(0,150,255,.07);
+  border-radius:24px;
+  padding:18px 20px;
+  text-align:center;
+  margin-bottom:12px
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  width:230px;height:230px;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#087bff;
+  opacity:.12;
+  filter:blur(52px);
+  pointer-events:none
+}
+.ring{
+  position:relative;
+  z-index:1;
+  width:210px;height:210px;
+  margin:0 auto;
+  display:block;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  -webkit-tap-highlight-color:transparent
+}
+.ring svg{width:100%;height:100%;display:block;overflow:visible}
+.ring circle{fill:none;stroke-linecap:round}
+.ring .orbit-glow{stroke:#39aaff;stroke-width:5;opacity:.28;filter:blur(7px)}
+.ring .orbit{stroke:#e7fbff;stroke-width:1.8;filter:url(#orbitGlow)}
+.ring .inner-disc{fill:url(#discFill);stroke:rgba(0,170,255,.15);stroke-width:1}
+.ring-spin-wrap{
+  position:absolute;inset:0;
+  animation:spinLoader 3.4s linear infinite;
+  transform-origin:50% 50%;
+  pointer-events:none
+}
+@keyframes spinLoader{to{transform:rotate(360deg)}}
+.ring .fluid-shadow{fill:#00cfff;opacity:.42;filter:blur(5px)}
+.ring .fluid-main{fill:url(#fluidGrad);filter:url(#fluidGlow)}
+.ring .fluid-highlight{fill:none;stroke:#00eaff;stroke-width:1.5;stroke-linecap:round;opacity:.72}
+.ringtxt{
+  position:absolute;inset:0;
+  z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;text-align:center;padding:0 24px;
+  pointer-events:none
+}
+.ringtxt small{font-size:11px;font-weight:600;color:#a8d9ff}
+.ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 1px 12px rgba(0,150,255,.24)}
 
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
@@ -219,18 +270,81 @@ function view(){
   placeInd();
   nv.querySelector(".add").setAttribute("aria-label",page==="plan"&&planTab==="goals"?"New savings goal":"Add transaction");
 }
-let deferred=null;
+let RING={},deferred=null;
 function vDash(){
   const m=mk(),now=new Date(),dl=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
   const mt=S.tx.filter(t=>inMonth(t,m)),inc=sumAmounts(mt.filter(t=>t.type==="income")),exp=sumAmounts(mt.filter(t=>t.type==="expense")),bal=cashBalance(S.tx);
   const ts=sumAmounts(S.tx.filter(t=>t.type==="expense"&&t.date===today())),mb=S.budgets.filter(b=>b.month===m),hasB=mb.length>0,tot=hasB?plannedBudgetTotal(mb):0;
   const rem=hasB?tot-exp:bal,allow=Math.max(0,(rem+ts)/dl),left=allow-ts;
+  RING={hasB,tot,exp,bal,rem,dl,allow,ts,left};
   const recent=[...S.tx].sort(byDate).slice(0,5);
+  const targetVal = Math.abs(left);
+
+  setTimeout(()=>{
+    const countEl = $("#ringCount");
+    if(countEl){
+      const t0 = performance.now();
+      const animCount = (t) => {
+        const p = Math.min(1, (t - t0) / 1000);
+        const k = 1 - Math.pow(1 - p, 3);
+        countEl.textContent = peso(targetVal * k);
+        if(p < 1) requestAnimationFrame(animCount);
+      };
+      requestAnimationFrame(animCount);
+    }
+  }, 50);
 
   return top("Budget Wise",now.toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric"}),true)+
-  `<section class="hero" aria-label="Loading animation"><div class="hero-loader" role="img" aria-label="Glowing animated neon ring"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="innerFill"><stop offset="0%" stop-color="#0b2a55"/><stop offset="100%" stop-color="#06172e"/></radialGradient><filter id="ringGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="innerGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.5"/></filter><filter id="fluidGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle class="loader-halo" cx="60" cy="60" r="51"/><circle class="loader-orbit" cx="60" cy="60" r="51"/><circle class="loader-inner" cx="60" cy="60" r="43.5"/><g class="fluid-spin"><path class="fluid-main" d="M58 8 C75 8 88 16 91 24 C94 31 88 35 82 29 C74 20 64 17 53 18 C42 19 37 27 34 39 C31 52 26 62 15 68 C22 57 27 47 28 34 C29 17 39 8 58 8Z"/><path class="fluid-edge" d="M37 21 C49 12 69 12 83 20 M34 28 C43 18 60 16 73 20"/></g></svg></div></section>
+  `<section class="hero">
+    <button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <radialGradient id="discFill" cx="50%" cy="45%" r="65%">
+            <stop offset="0%" stop-color="#082b57"/>
+            <stop offset="72%" stop-color="#061d3b"/>
+            <stop offset="100%" stop-color="#041326"/>
+          </radialGradient>
+          <linearGradient id="fluidGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00f5dc"/>
+            <stop offset="48%" stop-color="#00d9e9"/>
+            <stop offset="100%" stop-color="#079bff"/>
+          </linearGradient>
+          <filter id="orbitGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="1.8" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="fluidGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle class="orbit-glow" cx="60" cy="60" r="51.5"/>
+        <circle class="inner-disc" cx="60" cy="60" r="44.5"/>
+        <circle class="orbit" cx="60" cy="60" r="51.5"/>
+        <g class="ring-spin-wrap">
+          <path class="fluid-shadow" d="M57 8 C70 8 83 13 90 21 C96 28 93 36 87 38 C81 40 78 34 74 29 C67 21 58 19 49 21 C40 23 36 31 34 42 C32 55 27 65 14 72 C20 61 24 50 25 39 C27 20 39 8 57 8Z"/>
+          <path class="fluid-main" d="M57 8 C70 8 83 13 90 21 C96 28 93 36 87 38 C81 40 78 34 74 29 C67 21 58 19 49 21 C40 23 36 31 34 42 C32 55 27 65 14 72 C20 61 24 50 25 39 C27 20 39 8 57 8Z"/>
+          <path class="fluid-highlight" d="M37 22 C48 13 66 13 80 21"/>
+        </g>
+      </svg>
+      <span class="ringtxt">
+        <small>${left>=0?"You can still spend today":"Over today’s limit by"}</small>
+        <b id="ringCount">${peso(0)}</b>
+      </span>
+    </button>
+  </section>
   <div class="stats"><div><small>Money you have</small><b data-count="${bal}">${peso(bal)}</b></div><div><small>Money in</small><b data-count="${inc}">${peso(inc)}</b></div><div><small>Money out</small><b data-count="${exp}">${peso(exp)}</b></div></div>
   <h2>Latest transactions</h2><div class="card">${recent.length?recent.map(txRow).join(""):empty("Nothing here yet","Tap the + button to add your first expense.")}</div>`;
+}
+function ringSheet(){
+  const R=RING,st=(t,v,d)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:12px"><b>${t}</b><b>${v}</b></div><div style="color:var(--mute);font-size:13px;margin-top:2px">${d}</div></div>`;
+  sheet(`<h3>How your daily amount works</h3><p style="margin:0 0 6px;color:var(--mute)">This is how much you can spend today and still stay on track for the rest of the month.</p>`+
+  st("1. Money left this month",peso(Math.max(0,R.rem)),R.hasB?`Your budgets add up to ${peso(R.tot)} and you have spent ${peso(R.exp)} so far this month.`:`You haven’t set any budgets yet, so we use the money you have now (${peso(R.bal)}).`)+
+  st("2. Days left, including today",String(R.dl),"We spread your money evenly over these days.")+
+  st("3. Your amount for each day",peso(R.allow),`${peso(Math.max(0,R.rem)+R.ts)} ÷ ${R.dl} days. The ring shows how much of this is still left.`)+
+  st("4. Spent today",peso(R.ts),R.left>=0?`So you can still spend <b>${peso(R.left)}</b> today.`:`That is <b>${peso(-R.left)}</b> more than your amount for today.`)+
+  `<p style="color:var(--mute);font-size:13px">The ring starts fresh every day and changes when you add or delete a transaction.</p>`+
+  (R.hasB?"":`<button class="btn" data-a="gotoplan">Set a budget</button>`)+`<button class="btn ghost" data-a="close">Got it</button>`);
 }
 function vAct(){
   const list=S.tx.filter(t=>filter==="all"||t.type===filter).sort(byDate),g={};list.forEach(t=>(g[t.date]=g[t.date]||[]).push(t));
@@ -325,6 +439,7 @@ document.addEventListener("click",async e=>{
       view();
     }
   }
+  else if(a==="ring")ringSheet();
   else if(a==="ibarx")hideBar();
   else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
   else if(a==="gotoplan"){close();planTab="budgets";location.hash="plan"}
