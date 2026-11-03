@@ -29,16 +29,17 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .top .logo, .logoimg{width:36px;height:36px;border-radius:10px;background-image:url("apple-touch-icon.png");background-size:cover;background-position:center;display:inline-block}
 .ib{width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
 
-/* Hero Card & Reference Loader Ring Style */
-.hero{background:radial-gradient(circle at center, #0d1626 0%, #070b12 100%);color:#f2f2f2;border:1px solid rgba(0,242,254,0.25);box-shadow:0 16px 40px rgba(0,198,255,0.15), inset 0 0 20px rgba(0,242,254,0.05);border-radius:24px;padding:20px;text-align:center;margin-bottom:12px}
+/* Hero Card & Rotating Neon Loader Ring Style matching reference */
+.hero{background:radial-gradient(circle at center, #0b1320 0%, #04070d 100%);color:#fff;border:1px solid rgba(0,242,254,0.25);box-shadow:0 16px 40px rgba(0,198,255,0.18), inset 0 0 24px rgba(0,242,254,0.06);border-radius:24px;padding:20px;text-align:center;margin-bottom:12px}
 .ring{position:relative;width:210px;height:210px;margin:0 auto;display:block}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-linecap:round}
-.r0{stroke:rgba(0,242,254,0.2);stroke-width:3}
+.r0{stroke:rgba(0,242,254,0.18);stroke-width:3}
 .r1{stroke:url(#neonCyanGlow);stroke-width:3.5;filter:url(#intenseGlow);transition:stroke-dasharray 1.2s cubic-bezier(.22,1,.36,1)}
-.r-swoosh1{stroke:url(#swooshGrad1);stroke-width:10;filter:url(#intenseGlow);opacity:0.95;stroke-dasharray:65 300}
-.r-swoosh2{stroke:url(#swooshGrad2);stroke-width:6;filter:url(#intenseGlow);opacity:0.85;stroke-dasharray:45 320}
-.ring-progress-wrapper{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.22,1,.36,1);transform:rotate(0deg);pointer-events:none}
+.ring-progress-wrapper{position:absolute;inset:0;animation:spinLoader 3.5s linear infinite;pointer-events:none}
+@keyframes spinLoader{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.ring-swoosh-container{position:absolute;inset:0;animation:spinLoader 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;pointer-events:none}
+.r-swoosh{stroke:url(#swooshGrad);stroke-width:8;filter:url(#intenseGlow);stroke-dasharray:70 300;stroke-linecap:round}
 .ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:0 24px}
 .ringtxt small{font-size:11px;font-weight:600;color:#8ab4f8}
 .ringtxt b{font-size:24px;font-weight:800;letter-spacing:-.03em;color:#fff}
@@ -128,17 +129,13 @@ nav>*{pointer-events:auto}
       <stop offset="0%" stop-color="#00f2fe"/>
       <stop offset="100%" stop-color="#4facfe"/>
     </linearGradient>
-    <linearGradient id="swooshGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00f2fe"/>
+    <linearGradient id="swooshGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
       <stop offset="50%" stop-color="#00c6ff"/>
       <stop offset="100%" stop-color="#0072ff"/>
     </linearGradient>
-    <linearGradient id="swooshGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#00f2fe"/>
-    </linearGradient>
     <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feGaussianBlur stdDeviation="5" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -260,10 +257,9 @@ function vDash(){
   `<section class="hero"><button class="ring" data-a="ring" aria-label="Tap to see how this amount is worked out">
     <svg viewBox="0 0 120 120" aria-hidden="true">
       <circle class="r0" cx="60" cy="60" r="52"/>
-      <circle class="r-swoosh1" cx="60" cy="60" r="52"/>
-      <circle class="r-swoosh2" cx="60" cy="60" r="52"/>
       <circle id="ringCircle" class="r1" cx="60" cy="60" r="52" style="stroke-dasharray:0 326.7"/>
     </svg>
+    <div class="ring-swoosh-container"><svg viewBox="0 0 120 120" aria-hidden="true" style="width:100%;height:100%"><circle class="r-swoosh" cx="60" cy="60" r="52"/></svg></div>
     <div id="ringProgress" class="ring-progress-wrapper" style="transform: rotate(0deg)"></div>
     <span class="ringtxt">
       <small>${left>=0?"You can still spend today":"Over today’s limit by"}</small>
