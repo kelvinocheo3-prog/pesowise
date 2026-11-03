@@ -140,7 +140,7 @@ nav>*{pointer-events:auto}
   <path d="M12 21V9" />
   <path d="M19 21V3" />
 </symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915" />
+  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
   <circle cx="12" cy="12" r="3" />
 </symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M5 12h14" />
@@ -233,7 +233,7 @@ function vAct(){
   (list.length?Object.keys(g).map(d=>`<h2>${lab(d)}</h2><div class="card">${g[d].map(txRow).join("")}</div>`).join(""):`<div class="card">${empty("No transactions","Tap + to record money coming in or going out.")}</div>`);
 }
 function vPlan(){
-  const m=mk(),seg=`<div class="seg stick"><button data-a="plan" data-v="budgets" class="${planTab==="budgets"?"on":""}">Budgets</button><button data-a="plan" data-v="goals" class="${planTab==="goals"?"on":""}">Savings goals</button></div>`;
+  const m=mk(),seg=`<div class="seg stick ${planTab==="goals"?"right":""}"><div class="seg-ind"></div><button data-a="plan" data-v="budgets" class="${planTab==="budgets"?"on":""}">Budgets</button><button data-a="plan" data-v="goals" class="${planTab==="goals"?"on":""}">Savings goals</button></div>`;
   if(planTab==="goals")return top("Plan","Save for what matters")+seg+`<button class="link" data-a="goal">+ New goal</button>`+(S.goals.length?S.goals.map(g=>{const cur=savingsBalance(g.id,S.acts),p=Math.max(0,Math.min(100,Math.round(cur/g.targetAmount*100)));
     return `<div class="card" style="margin-bottom:10px;padding:14px"><b style="font-size:14px">${esc(g.name)}</b><div style="color:var(--mute);font-size:13px">${peso(cur)} saved of ${peso(g.targetAmount)}${p>=100?" · Goal reached 🎉":""}</div><div class="bar"><i style="width:${p}%"></i></div><div style="display:flex;justify-content:space-between;margin-top:6px"><button class="link" data-a="activity" data-id="${esc(g.id)}">Deposit or withdraw</button><button class="link" data-a="delgoal" data-id="${esc(g.id)}" style="color:var(--exp)">Delete</button></div></div>`}).join(""):`<div class="card">${empty("No goals yet","Pick something to save for, like a phone or school fees.")}</div>`);
   const mb=S.budgets.filter(b=>b.month===m),tot=plannedBudgetTotal(mb),sp=sumAmounts(S.tx.filter(t=>t.type==="expense"&&inMonth(t,m)));
@@ -309,7 +309,7 @@ const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("da
 document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
-  else if(a==="plan"){planTab=v;view()}
+  else if(a==="plan"){planTab=v;const segEl=t.closest(".seg");if(segEl)segEl.classList.toggle("right",v==="goals");view()}
   else if(a==="ring")ringSheet();
   else if(a==="ibarx")hideBar();
   else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
@@ -321,7 +321,7 @@ document.addEventListener("click",async e=>{
   else if(a==="type"){
     d.type=v;
     d.cat=catsOf(v)[0];
-    const segEl=e.target.closest(".seg");
+    const segEl=t.closest(".seg");
     if(segEl) segEl.classList.toggle("right",v==="income");
     document.querySelectorAll('#sheet [data-a="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===v));
     $("#cats").innerHTML=chipsHtml(catsOf(v));
