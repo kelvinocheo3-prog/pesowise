@@ -135,7 +135,7 @@ nav>*{pointer-events:auto}
   <path d="M12 21V9" />
   <path d="M19 21V3" />
 </symbol><symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915" />
   <circle cx="12" cy="12" r="3" />
 </symbol><symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M5 12h14" />
@@ -302,7 +302,16 @@ const applyTheme=()=>theme==="auto"?document.documentElement.removeAttribute("da
 document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
   if(a==="add"){if(curPage==="plan"&&planTab==="goals")document.querySelector('[data-a="goal"]')?.click();else{d={type:"expense",cat:"Food"};txSheet()}}
-  else if(a==="plan"){planTab=v;const segEl=t.closest(".seg");if(segEl)segEl.classList.toggle("right",v==="goals");view()}
+  else if(a==="plan"){
+    planTab=v;
+    const segEl=t.closest(".seg");
+    if(segEl) {
+      segEl.classList.toggle("right",v==="goals");
+      setTimeout(() => view(), 350); // Wait for sliding animation before swapping view contents
+    } else {
+      view();
+    }
+  }
   else if(a==="ring")ringSheet();
   else if(a==="ibarx")hideBar();
   else if(a==="install"){hideBar();if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;close();view()}
@@ -315,10 +324,17 @@ document.addEventListener("click",async e=>{
     d.type=v;
     d.cat=catsOf(v)[0];
     const segEl=t.closest(".seg");
-    if(segEl) segEl.classList.toggle("right",v==="income");
+    if(segEl) {
+      segEl.classList.toggle("right",v==="income");
+    }
     document.querySelectorAll('#sheet [data-a="type"]').forEach(b=>b.classList.toggle("on",b.dataset.v===v));
-    $("#cats").innerHTML=chipsHtml(catsOf(v));
-    $("#cats").scrollLeft=0;
+    setTimeout(() => {
+      const catsEl = $("#cats");
+      if(catsEl) {
+        catsEl.innerHTML=chipsHtml(catsOf(v));
+        catsEl.scrollLeft=0;
+      }
+    }, 150);
   }
   else if(a==="cat"){d.cat=v;document.querySelectorAll("#cats .chip").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
   else if(a==="save"){keep();const amt=validAmount(String(d.amt).replace(/,/g,""));if(!amt)return err("Enter an amount above zero, with up to 2 decimals.");
